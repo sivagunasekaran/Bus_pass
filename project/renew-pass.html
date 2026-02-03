@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Renew Bus Pass</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+
+<body>
+
+<div class="container" style="width:600px;">
+  <h2>Renew Bus Pass</h2>
+
+  <form id="renewForm" class="auth-form">
+
+    <p><b>Current Route:</b> Tambaram → Guindy</p>
+    <p><b>Current Expiry:</b> 30-Sep-2026</p>
+
+    <label>
+      <input type="checkbox" id="changeRoute">
+      Change Route
+    </label>
+
+    <!-- ROUTE SECTION -->
+    <div id="routeSection" style="display:none; margin-top:15px;">
+      <input type="text" id="startInput" placeholder="Enter New Start Location (Chennai)">
+      <input type="text" id="endInput" placeholder="Enter New End Location (Chennai)">
+      <button type="button" id="drawRouteBtn">Show Route</button>
+
+      <div id="map" style="height:300px;"></div>
+
+
+      <p id="route-info"></p>
+      <p id="fare-info"></p>
+    </div>
+
+    <select id="duration">
+      <option value="30">1 Month</option>
+      <option value="90">3 Months</option>
+    </select>
+
+    <button type="button" id="calculateRenewal">
+      Calculate Renewal Fare
+    </button>
+
+    <p id="renewFare"></p>
+    <button type="button" id="resetRenewal" style="display:none;">
+  Reset Route
+</button>
+
+    <button type="submit">Submit Renewal</button>
+
+  </form>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="js/renew-pass.js"></script>
+
+</body>
+</html>

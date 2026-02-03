@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apply Bus Pass | Bus Pass Management</title>
+
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"
+  />
+</head>
+
+<body>
+    <div class="container">
+  <h2>Apply Bus Pass</h2>
+
+  <form class="auth-form" id="applyForm">
+
+    <input type="text" placeholder="Applicant Name" required>
+    <input type="file" required>
+
+    <input type="text" id="startInput" placeholder="Enter Start Location (Chennai)">
+    <input type="text" id="endInput" placeholder="Enter End Location (Chennai)">
+
+    <button type="button" id="drawRouteBtn">Show Route</button>
+
+    <div id="map"></div>
+
+    <p id="route-info"></p>
+    <p id="fare-info"></p>
+
+    <select id="passType">
+      <option value="">Select Pass Type</option>
+      <option value="elder">Elder Pass (30% Discount)</option>
+      <option value="student">Student Pass (20% Discount)</option>
+      <option value="ordinary">Ordinary Pass</option>
+    </select>
+
+    <select id="passDuration">
+      <option value="">Select Pass Duration</option>
+      <option value="1">1 Month</option>
+      <option value="3">3 Months</option>
+    </select>
+
+    <button type="button" id="calculateFareBtn">Calculate Fare</button>
+
+    <p id="finalFare"></p>
+
+    <button type="button" id="resetRoute">Reset Route</button>
+
+    <button type="submit">Submit Application</button>
+
+  </form>
+</div>
+
+
+    
+  
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/apply-pass.js"></script>
+
+
+  <!-- Form validation (MUST be last) -->
+  <script>
+    document.getElementById("applyForm").addEventListener("submit", function (e) {
+      const routeInfo = document.getElementById("route-info").innerText;
+      if (!routeInfo) {
+        e.preventDefault();
+        alert("Please select start and end points on the map");
+      }
+    });
+  </script>
+
+</body>
+</html>
