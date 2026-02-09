@@ -63,8 +63,9 @@ calculateBtn.addEventListener("click", () => {
 // ==============================
 window.onRouteCalculated = function () {
   fareCalculated = false;
-  finalFareBox.innerText = "";
+  document.getElementById("finalFare").innerText = "";
 };
+
 
 // ==============================
 // FORM SUBMIT VALIDATION

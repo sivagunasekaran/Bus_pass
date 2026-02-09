@@ -1,0 +1,178 @@
+/* =========================
+   GLOBAL PAGE STYLE
+========================= */
+body {
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  background: linear-gradient(135deg, #d4dde4, #170f49);
+  margin: 0;
+  color: #333;
+}
+
+
+/* ================= BUS GIF ================= */
+.header-bus {
+    display: flex;
+    justify-content: center;
+
+    max-width: 100%;
+    width: 1500px;
+    height: 350px;
+}
+
+
+ .hero {
+  position: relative;
+  width: 100%;
+  height: 350px; /* full viewport height */
+  overflow: hidden;
+}
+
+.hero-gif  {
+ width: 1500px;
+    height: 350px;
+  object-fit: fill /* fills space without distortion */
+}
+.hero-gif:hover {
+  transform: scale(1.05);
+  transition: transform 0.3s ease;
+}
+.hero-text {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgb(14, 13, 13);
+  text-align: center;
+  background: rgba(253, 252, 252, 0.4); /* optional overlay for readability */
+  
+  border-radius: 8px;
+}
+.hero-text:hover {
+  background: rgba(253, 252, 252, 0.6);
+  transition: background 0.3s ease;
+}
+/* Three Sections Styling */
+.end-sections {
+  display: flex;
+  justify-content: space-around; /* spaces them evenly */
+  align-items: flex-start;
+  padding: 3rem 2rem;
+  background: #f0f0f0;
+}
+
+.section-box {
+  flex: 1; /* equal width for all sections */
+  margin: 0 1rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.section-box h2 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.section-box ul {
+  list-style: none;
+  padding: 0;
+}
+
+.section-box li {
+  margin: 0.5rem 0;
+  color: #555;
+}
+
+.section-box li:hover {
+  color: #000;
+  font-weight: bold;
+  transition: color 0.3s ease;
+}
+.section-box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+
+/* ================= HEADER ================= */
+.dashboard-header {
+  background: #000;
+  color: #fff;
+  text-align: center;
+  padding: 25px 20px 15px;
+  border-radius: 0 0 20px 20px;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.dashboard-header p {
+  margin: 8px 0 15px;
+  font-size: 15px;
+  opacity: 0.85;
+}
+
+
+/* ===== CARD STYLE ===== */
+.dashboard-card {
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  text-decoration: none;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-align: center;
+}
+
+
+
+.dashboard-card p {
+  color: #333;
+  font-size: 14px;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+
+
+/*-------------------------Index card--------------------------*/
+/* ===========================
+   DASHBOARD ACTIONS
+=========================== */
+.dashboard-actions {
+  max-width: 900px;
+  margin: 40px auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.dashboard-card {
+  background: white;
+  padding: 22px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #333;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+}
+/* ===== ACTION CARDS ===== */
+.dashboard-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 260px);
+  gap: 30px;
+}

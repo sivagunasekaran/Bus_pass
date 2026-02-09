@@ -1,0 +1,171 @@
+
+/* =========================
+   GLOBAL PAGE STYLE
+========================= */
+body {
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  background: linear-gradient(135deg, #d4dde4, #170f49);
+  margin: 0;
+  
+}
+
+/* =========================
+   MAIN CONTAINER (CARD)
+========================= */
+.container {
+  width: 650px;
+  margin: 30px auto;
+  background: #009aff2b;
+  padding: 60px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* =========================
+   HEADINGS
+========================= */
+h2 {
+  text-align: center;
+  margin-bottom: 50px;
+  color: #1a237e;
+  letter-spacing: 0.5px;
+  margin-top: -10px;
+  font-size: 24px;
+}
+
+/* =========================
+   FORM ELEMENTS
+========================= */
+.auth-form input,
+.auth-form select,
+.auth-form button {
+  width: 100%;
+  padding: 12px 2px;
+  margin-bottom: 14px;
+  font-size: 14px;
+  border-radius: 6px;
+}
+
+.auth-form input,
+.auth-form select {
+  border: 1px solid #dcdfe3;
+  background: #fdfefe;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.auth-form input:focus,
+.auth-form select:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.15);
+}
+
+/* =========================
+   SELECT DROPDOWN POLISH
+========================= */
+.auth-form select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23999' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+}
+
+/* =========================
+   SECONDARY BUTTONS
+========================= */
+.auth-form button[type="button"] {
+  background: linear-gradient(135deg, #26a69a, #00897b);
+}
+
+#resetRoute {
+  background: #9e9e9e;
+}
+
+#resetRoute:hover {
+  background: #757575;
+}
+
+.auth-form button {
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    color: white;
+    background:  #1565c0;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+#renewFare {
+    margin-top: 12px;
+    padding: 10px;
+    text-align: center;
+    border-radius: 6px;
+    font-weight: 600;
+    background: #f1f8ff; 
+}
+#route-info {
+    margin-top: 12px;
+    padding: 10px;
+    text-align: center;
+    border-radius: 6px;
+    font-weight: 600;
+    background: #f1f8ff;
+}
+#fare-info {
+    margin-top: 12px;
+    padding: 10px;
+    text-align: center;
+    border-radius: 6px;
+    font-weight: 600;
+    background: #f1f8ff;
+}
+
+/* =========================
+   CHECKBOX + TEXT INLINE
+========================= */
+.checkbox-row {
+  display: flex;
+  align-items: center;   /* vertical alignment */
+  gap: 12px;             /* space between checkbox and text */
+  margin: 12px 0;
+  height: 50px;          /* ensures consistent height for alignment */
+}
+
+.checkbox-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.checkbox-row label {
+  font-size: 15px;
+  color: #000;        /* visible on dark background */
+  cursor: pointer;
+  margin-top: -12px;
+}
+
+#changeRoute:checked + label {
+  color: #574f4f;
+}
+
+#map {
+  height: 320px;
+  width: 100%;
+}
+.back-btn {
+  display: inline-block;
+  margin: 15px 20px;
+  padding: 8px 16px;
+  background-color: #000;        /* Button background */
+  color: #fff;                   /* Text color */
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+}
+
+.back-btn:hover {
+  background-color: #333;
+}

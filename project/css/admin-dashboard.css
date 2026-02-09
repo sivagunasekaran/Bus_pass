@@ -1,0 +1,111 @@
+body {
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  background: linear-gradient(135deg, #d4dde4, #170f49);
+  margin: 0;
+ 
+}
+
+.container {
+    width: 650px;
+    margin: 60px auto;
+    background: #009aff2b;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+
+/* =========================
+   ADMIN TABLE
+========================= */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 25px;
+  font-size: 14px;
+}
+
+.admin-table th,
+.admin-table td {
+  border: 1px solid #e0e0e0;
+  padding: 12px;
+  text-align: center;
+}
+
+.admin-table th {
+  background: linear-gradient(135deg, #1976d2, #1565c0);
+  color: white;
+}
+
+.admin-table tr:nth-child(even) {
+  background-color: #f9fbfd;
+}
+
+/* =========================
+   ADMIN BUTTONS
+========================= */
+.admin-table button {
+  padding: 6px 12px;
+  margin: 2px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.approve-btn {
+  background-color: #2e7d32;
+  color: white;
+}
+
+.reject-btn {
+  background-color: #c62828;
+  color: white;
+}
+
+.container h2 {
+    text-align: center;
+    font-size: 24px;  
+    margin-bottom: 20px; 
+    margin-top: -10px;
+}
+
+/* =========================
+   STATUS COLORS
+========================= */
+.status-pending {
+  color: #f9a825;
+  font-weight: bold;
+}
+
+.status-approved {
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+.status-rejected {
+  color: #c62828;
+  font-weight: bold;
+}
+
+
+.page-header {
+  width: 100%;
+  text-align: center;
+  padding: 40px 0;
+  background: linear-gradient(135deg, #060606, #03264d);
+}
+
+.page-header h1 {
+  margin: 0;
+  color: #fff;
+  font-size: 30px;
+  font-weight: 600;
+}
+.page-header h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 400;
+    margin-top: 8px;
+}

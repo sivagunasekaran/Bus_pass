@@ -22,7 +22,6 @@ document.addEventListener("DOMContentLoaded", setupRenewPass);
 // ================= SETUP =================
 function setupRenewPass() {
 
-  // ---- Elements ----
   const changeRoute = document.getElementById("changeRoute");
   const routeSection = document.getElementById("routeSection");
   const drawRouteBtn = document.getElementById("drawRouteBtn");
@@ -30,7 +29,7 @@ function setupRenewPass() {
   const endInput = document.getElementById("endInput");
   const routeInfo = document.getElementById("route-info");
   const fareInfo = document.getElementById("fare-info");
-  const resetRenewal = document.getElementById("resetRenewal");
+  const resetBtn = document.getElementById("resetRoute");
   const calculateRenewal = document.getElementById("calculateRenewal");
   const duration = document.getElementById("duration");
   const renewFare = document.getElementById("renewFare");
@@ -39,7 +38,6 @@ function setupRenewPass() {
   // ---- Change Route ----
   changeRoute.addEventListener("change", () => {
     routeSection.style.display = changeRoute.checked ? "block" : "none";
-    resetRenewal.style.display = changeRoute.checked ? "block" : "none";
 
     if (changeRoute.checked) {
       setTimeout(() => {
@@ -52,7 +50,7 @@ function setupRenewPass() {
     }
   });
 
-  // ---- Show Route (Text Input) ----
+  // ---- Draw Route (Text Input) ----
   drawRouteBtn.addEventListener("click", async () => {
     initMapIfNeeded();
 
@@ -90,7 +88,7 @@ function setupRenewPass() {
     fareInfo.innerText = `Base Fare: ₹${currentBaseFare}`;
   });
 
-  // ---- Renewal Calculation ----
+  // ---- Calculate Renewal Fare ----
   calculateRenewal.addEventListener("click", () => {
 
     if (!changeRoute.checked) {
@@ -103,20 +101,23 @@ function setupRenewPass() {
       return;
     }
 
-    const days = parseInt(duration.value, 10);
+    const days = Number(duration.value);
     const total = days === 90 ? currentBaseFare * 3 : currentBaseFare;
 
     renewFare.innerText = `Renewal Fare: ₹${total}`;
   });
 
-  // ---- Reset ----
-  resetRenewal.addEventListener("click", resetRoute);
+  // ---- Reset Route (FIXED) ----
+  resetBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    resetRoute();
+  });
 
   // ---- Submit ----
   renewForm.addEventListener("submit", (e) => {
     if (!renewFare.innerText) {
       e.preventDefault();
-      alert("Calculate renewal fare before submitting");
+      alert("Please calculate renewal fare before submitting");
     }
   });
 }
@@ -167,7 +168,7 @@ async function handleMapClick(e) {
   }
 }
 
-// ================= HELPERS =================
+// ================= RESET HELPERS =================
 function clearMapLayersOnly() {
   if (!map) return;
 
@@ -175,14 +176,18 @@ function clearMapLayersOnly() {
   if (endMarker) map.removeLayer(endMarker);
   if (routeLine) map.removeLayer(routeLine);
 
-  startMarker = endMarker = routeLine = null;
-  startLatLng = endLatLng = null;
+  startMarker = null;
+  endMarker = null;
+  routeLine = null;
+  startLatLng = null;
+  endLatLng = null;
   routeSelected = false;
 }
 
 function resetRoute() {
   clearMapLayersOnly();
-  currentBaseFare = 0;
+
+  currentBaseFare = EXISTING_BASE_FARE;
 
   document.getElementById("startInput").value = "";
   document.getElementById("endInput").value = "";
@@ -190,7 +195,9 @@ function resetRoute() {
   document.getElementById("fare-info").innerText = "";
   document.getElementById("renewFare").innerText = "";
 
-  if (map) map.setView(chennaiCenter, 13);
+  if (map) {
+    map.setView(chennaiCenter, 13);
+  }
 }
 
 // ================= UTILS =================

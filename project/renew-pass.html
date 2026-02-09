@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Renew Bus Pass</title>
 
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/renew.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 
@@ -17,11 +17,11 @@
 
     <p><b>Current Route:</b> Tambaram → Guindy</p>
     <p><b>Current Expiry:</b> 30-Sep-2026</p>
-
-    <label>
+    <div class="checkbox-row">
       <input type="checkbox" id="changeRoute">
-      Change Route
-    </label>
+      <label for="changeRoute"><b>Change route</b></label>
+    </div>
+
 
     <!-- ROUTE SECTION -->
     <div id="routeSection" style="display:none; margin-top:15px;">
@@ -46,11 +46,12 @@
     </button>
 
     <p id="renewFare"></p>
-    <button type="button" id="resetRenewal" style="display:none;">
-  Reset Route
-</button>
+ 
+    <button type="button" id="resetRoute">Reset Route</button>
 
-    <button type="submit">Submit Renewal</button>
+<button type="submit">Submit Application</button>
+<a href="index.html" class="back-btn">← Back</a>
+
 
   </form>
 </div>
