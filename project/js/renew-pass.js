@@ -107,18 +107,58 @@ function setupRenewPass() {
     renewFare.innerText = `Renewal Fare: ₹${total}`;
   });
 
-  // ---- Reset Route (FIXED) ----
+  // ---- Reset Route ----
   resetBtn.addEventListener("click", (e) => {
     e.preventDefault();
     resetRoute();
   });
 
-  // ---- Submit ----
-  renewForm.addEventListener("submit", (e) => {
+  // ---- SUBMIT RENEWAL (BACKEND INTEGRATION) ----
+  renewForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
     if (!renewFare.innerText) {
-      e.preventDefault();
       alert("Please calculate renewal fare before submitting");
+      return;
     }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Please login again");
+      window.location.href = "login.html";
+      return;
+    }
+
+    const busPassId = localStorage.getItem("bus_pass_id");
+    if (!busPassId) {
+      alert("Bus pass not found");
+      return;
+    }
+
+    // Extract number from "₹300"
+    const amount = Number(renewFare.innerText.replace(/[^\d]/g, ""));
+
+    const res = await fetch("http://127.0.0.1:5001/api/renewal/apply", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({
+        bus_pass_id: busPassId,
+        renewal_fare: amount
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.message || "Renewal failed");
+      return;
+    }
+
+    alert("Renewal applied successfully");
+    window.location.href = "status.html";
   });
 }
 

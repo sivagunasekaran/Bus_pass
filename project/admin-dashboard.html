@@ -1,40 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- 🔴 IMPORTANT: correct CSS path -->
-  <link rel="stylesheet" href="css/admin-dashboard.css">
+  <!-- Admin CSS -->
+  <link rel="stylesheet" href="css/admin-dashboard.css" />
 </head>
 
 <body>
-  <header class="page-header">
-    <h1>Admin Dashboard</h1>
-    <h2>Approve and Reject Applications</h2>
-  </header>
-<div class="container" style="width: 900px;">
-  <h2>Admin Dashboard</h2>
 
-  <table class="admin-table">
+  <!-- HEADER -->
+  <header class="admin-header">
+    <h1>Bus Pass Admin Dashboard</h1>
+    <p>Manage new passes and renewals</p>
+  </header>
+
+  <!-- MAIN CONTAINER --><div class="tabs">
+  <button onclick="showTab('newPass')">New Applied Pass</button>
+  <button onclick="showTab('renewPass')">Renew Pass</button>
+</div>
+
+<div id="newPass" class="tab-content">
+  <table>
     <thead>
       <tr>
         <th>User</th>
-        <th>Current Route</th>
-        <th>New Route</th>
-        <th>Duration</th>
+        <th>Route</th>
+        <th>ID Proof</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="passTable"></tbody>
+  </table>
+</div>
+
+<div id="renewPass" class="tab-content" style="display:none">
+  <table>
+    <thead>
+      <tr>
+        <th>User</th>
         <th>Fare</th>
         <th>Status</th>
         <th>Action</th>
       </tr>
     </thead>
-
-    <tbody id="renewalTable">
-      <!-- JS inserts rows here -->
-    </tbody>
+    <tbody id="renewTable"></tbody>
   </table>
 </div>
 
-<script src="js/admin-dashboard.js"></script>
+
+  <!-- ADMIN JS (IMPORTANT: ONLY HERE) -->
+  <script src="js/admin_dashboard.js"></script>
+
 </body>
 </html>

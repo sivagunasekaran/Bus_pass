@@ -2,15 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Bus Pass Management</title>
-  <link rel="stylesheet" href="css/status.css">
+  <title>Renewal Status</title>
 </head>
+
 <body>
 
-  <div class="container">
-    <!-- Page Content Here -->
-  </div>
-  <a href="index.html" class="back-btn">← Back</a>
+  <h3 id="renewalStatus">Checking renewal status...</h3>
+
+  <button id="payBtn" style="display:none;">
+    Pay Renewal Fee
+  </button>
+
+  <!-- Razorpay library -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <!-- Your JS file -->
+  <script src="js/status.js"></script>
 
 </body>
 </html>
