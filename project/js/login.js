@@ -10,19 +10,23 @@ async function login() {
     });
 
     const data = await res.json();
+
+    console.log("LOGIN RESPONSE:", data); // 🔍 DEBUG
     alert("ROLE FROM BACKEND: " + data.role);
 
-
     if (!res.ok) {
-      alert(data.message || "Login failed");
+      alert(data.message || data.msg || "Login failed");
       return;
     }
 
-    // ✅ Store token
-    localStorage.setItem("token", data.access_token);
+    // 🔥 STORE THE *REAL* JWT
+    localStorage.setItem("access_token", data.access_token);
     localStorage.setItem("role", data.role);
 
-    // ✅ ROLE BASED REDIRECT
+    // (optional) clean old bad key
+    localStorage.removeItem("token");
+
+    // ✅ ROLE-BASED REDIRECT
     if (data.role === "ADMIN") {
       window.location.href = "admin-dashboard.html";
     } else {

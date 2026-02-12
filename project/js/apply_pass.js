@@ -1,86 +1,125 @@
-// ==============================
-// DOM REFERENCES
-// ==============================
-const passType        = document.getElementById("passType");
-const passDuration    = document.getElementById("passDuration");
-const calculateBtn    = document.getElementById("calculateFareBtn");
-const finalFareBox    = document.getElementById("finalFare");
-const applyForm       = document.getElementById("applyForm");
+console.log("apply_pass.js LOADED - PORT 5001 VERSION");
 
-// ==============================
-// STATE
-// ==============================
-let fareCalculated = false;
+document.addEventListener("DOMContentLoaded", () => {
 
-// ==============================
-// DISCOUNT LOGIC
-// ==============================
-function applyDiscount(baseFare, type) {
-  if (type === "elder") return Math.round(baseFare * 0.7);
-  if (type === "student") return Math.round(baseFare * 0.8);
-  return baseFare;
-}
+  const passType     = document.getElementById("passType");
+  const passDuration = document.getElementById("passDuration");
+  const calculateBtn = document.getElementById("calculateFareBtn");
+  const finalFareBox = document.getElementById("finalFare");
+  const applyForm    = document.getElementById("applyForm");
+  const submitBtn    = document.getElementById("submitBtn");
 
-// ==============================
-// CALCULATE FARE BUTTON
-// ==============================
-calculateBtn.addEventListener("click", () => {
+  let fareCalculated = false;
+  let totalFareValue = null;
 
-  // 1️⃣ Route check
-  if (!window.routeSelected || !window.baseFare) {
-    alert("Please select route first");
-    return;
+  function applyDiscount(baseFare, type) {
+    if (type === "elder") return Math.round(baseFare * 0.7);
+    if (type === "student") return Math.round(baseFare * 0.8);
+    return baseFare;
   }
 
-  // 2️⃣ Pass type check
-  if (!passType.value) {
-    alert("Please select pass type");
-    return;
-  }
+  // ==============================
+  // CALCULATE FARE
+  // ==============================
+  calculateBtn.addEventListener("click", () => {
 
-  // 3️⃣ Duration check
-  if (!passDuration.value) {
-    alert("Please select pass duration");
-    return;
-  }
+    if (!window.routeSelected || window.baseFare === null) {
+      alert("Please select route first");
+      return;
+    }
 
-  // 4️⃣ Discount
-  const discountedFare = applyDiscount(window.baseFare, passType.value);
+    if (!passType.value || !passDuration.value) {
+      alert("Select pass type and duration");
+      return;
+    }
 
-  // 5️⃣ Duration multiplier
-  const months = parseInt(passDuration.value, 10);
-  const totalFare = discountedFare * months;
+    const discountedFare = applyDiscount(window.baseFare, passType.value);
+    const months = parseInt(passDuration.value, 10);
+    totalFareValue = discountedFare * months;
 
-  // 6️⃣ Display
-  finalFareBox.innerText =
-    `Total Fare (${months} Month${months === 3 ? "s" : ""}): ₹${totalFare}`;
+    finalFareBox.innerText =
+      `Total Fare (${months} Month${months > 1 ? "s" : ""}): ₹${totalFareValue}`;
 
-  fareCalculated = true;
-});
+    fareCalculated = true;
+  });
 
-// ==============================
-// RESET WHEN ROUTE CHANGES
-// ==============================
-window.onRouteCalculated = function () {
-  fareCalculated = false;
-  document.getElementById("finalFare").innerText = "";
-};
+  // ==============================
+  // RESET WHEN ROUTE CHANGES
+  // ==============================
+  window.onRouteCalculated = function () {
+    fareCalculated = false;
+    totalFareValue = null;
+    finalFareBox.innerText = "";
+  };
 
-
-// ==============================
-// FORM SUBMIT VALIDATION
-// ==============================
-applyForm.addEventListener("submit", e => {
-
-  if (!window.routeSelected) {
-    e.preventDefault();
-    alert("Please select route");
-    return;
-  }
+  // ==============================
+  // SUBMIT APPLICATION (🔥 FIXED)
+  submitBtn.addEventListener("click", async () => {
 
   if (!fareCalculated) {
-    e.preventDefault();
     alert("Please calculate fare before submitting");
     return;
   }
+
+  // 🔐 JWT
+  const token =
+    localStorage.getItem("access_token") ||
+    localStorage.getItem("token");
+
+  if (!token || token.split(".").length !== 3) {
+    alert("Invalid session. Please login again.");
+    localStorage.clear();
+    window.location.href = "login.html";
+    return;
+  }
+
+  // ✅ BUILD FORMDATA (THIS WAS MISSING)
+  const formData = new FormData();
+
+  // Route info (from map.js)
+  const routeInfoText = document.getElementById("route-info").innerText;
+
+  // File input (ID proof)
+  const fileInput = document.querySelector('input[type="file"]');
+
+  formData.append("route", routeInfoText);
+  formData.append("fare", totalFareValue);
+
+  if (fileInput && fileInput.files.length > 0) {
+    formData.append("id_proof", fileInput.files[0]);
+  }
+
+  try {
+    const res = await fetch("http://127.0.0.1:5001/api/pass/apply", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`
+        // ❌ DO NOT set Content-Type
+      },
+      body: formData
+    });
+
+    if (res.status === 401 || res.status === 422) {
+      alert("Session expired. Please login again.");
+      localStorage.clear();
+      window.location.href = "login.html";
+      return;
+    }
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      alert(data.message || data.msg || "Submission failed");
+      return;
+    }
+
+    alert(data.message || "Pass applied successfully");
+
+  } catch (err) {
+    console.error("Network / server error:", err);
+    alert("Unable to reach server. Make sure Flask is running on port 5001.");
+  }
 });
+
+  });
+;
