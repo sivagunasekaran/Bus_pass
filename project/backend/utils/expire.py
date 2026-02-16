@@ -13,6 +13,8 @@ def enforce_expiry(bus_pass):
     if not bus_pass:
         return False
 
+    today = date.today()
+
     # Only PAID passes can expire
     if bus_pass.status != "PAID":
         return bus_pass.is_active == 1
