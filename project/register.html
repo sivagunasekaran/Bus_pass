@@ -13,21 +13,23 @@
   </header>
 
   <div class="container">
-    <h2>Register</h2>
+        <h2>Register</h2>
+    <form class="auth-form" id="registerForm">
+      <input type="text" id="name" placeholder="Full Name" required>
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
 
-    <form class="auth-form">
-      <input type="text" placeholder="Full Name" required>
-      <input type="email" placeholder="Email" required>
-      <input type="password" placeholder="Password" required>
-      <input type="password" placeholder="Confirm Password" required>
-
-      <button type="submit">Register</button>
+      <button type="button" id="registerBtn">Register</button>
     </form>
+
 
     <p class="link-text">
       Already have an account? <a href="login.html">Login here</a>
     </p>
   </div>
+<script src="./js/register.js?v=999"></script>
+
 
 </body>
 </html>
