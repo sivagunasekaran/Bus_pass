@@ -1,9 +1,6 @@
 /*************************
  * ADMIN DASHBOARD SCRIPT
- * (FIXED & PRODUCTION-READY)
  *************************/
-
-console.log("✅ ADMIN DASHBOARD JS LOADED");
 
 // ================= CONFIG =================
 const API_BASE = "http://127.0.0.1:5001";
@@ -54,7 +51,6 @@ document.addEventListener("DOMContentLoaded", () => {
   renewPassDiv = document.getElementById("renewPass");
 
   if (!passTableBody || !renewTableBody) {
-    console.error("❌ Required table elements missing");
     return;
   }
 
@@ -186,11 +182,7 @@ async function loadRenewPasses() {
       }
     );
 
-    console.log("STATUS:", res.status);
-    console.log("HEADERS:", [...res.headers.entries()]);
-
     const text = await res.text();
-    console.log("RAW RESPONSE:", text);
 
     if (!res.ok) {
       throw new Error("Backend returned error");
@@ -200,7 +192,6 @@ async function loadRenewPasses() {
     renderRenewTable(data);
 
   } catch (err) {
-    console.error("❌ FULL ERROR:", err);
     renewTableBody.innerHTML =
       `<tr><td colspan="7">Server error</td></tr>`;
   }

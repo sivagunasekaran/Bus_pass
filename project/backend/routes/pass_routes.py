@@ -37,7 +37,7 @@ def apply_pass():
                 ), 400
 
         # ==================================================
-        # 3️⃣ READ & VALIDATE FORM DATA
+        # Read & validate form data
         # ==================================================
         try:
             applicant_name = request.form["applicant_name"]
@@ -46,7 +46,6 @@ def apply_pass():
             fare = int(request.form["fare"])
             duration_months = int(request.form["pass_duration"])
         except (KeyError, ValueError) as e:
-            print(f"❌ Form data error: {str(e)}")
             return jsonify({"message": "Invalid or missing form data"}), 400
 
         if duration_months not in (1, 3):
@@ -63,7 +62,6 @@ def apply_pass():
         # ==================================================
         file = request.files.get("id_proof")
         if not file or file.filename == "":
-            print("❌ ID proof missing")
             return jsonify({"message": "ID proof required"}), 400
 
         filename = secure_filename(file.filename).replace(" ", "_").lower()
@@ -73,10 +71,9 @@ def apply_pass():
 
         file_path = os.path.join(upload_dir, filename)
         file.save(file_path)
-        print(f"✅ File saved: {file_path}")
 
         # ==================================================
-        # 6️⃣ SAVE BUS PASS
+        # Save bus pass
         # ==================================================
         bus_pass = BusPass(
             user_id=user_id,
@@ -93,13 +90,13 @@ def apply_pass():
         )
 
         db.session.add(bus_pass)
-        db.session.commit()   # 🔥 COMMIT FIRST
-        print(f"✅ Bus pass saved for user {user_id}")
+        db.session.commit()
 
         # ==================================================
-        # 7️⃣ SEND EMAIL (AFTER SUCCESSFUL COMMIT)
+        # Send email after successful commit
         # ==================================================
-        print(f"📧 Attempting to send email to {user.email}...")
+        # ==================================================
+
         try:
             send_email(
                 to=user.email,
@@ -111,13 +108,12 @@ def apply_pass():
                     "Thank you."
                 )
             )
-            print(f"✅ Email sent successfully to {user.email}")
         except Exception as e:
-            print(f"⚠️  Email sending failed: {str(e)}")
             # Don't fail the entire request just because email failed
 
         # ==================================================
-        # 8️⃣ RESPONSE
+        # Response
+        # ==================================================
         # ==================================================
         response_data = {
             "message": "Pass applied successfully",

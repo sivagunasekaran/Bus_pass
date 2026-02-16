@@ -11,9 +11,6 @@ async function login() {
 
     const data = await res.json();
 
-    console.log("LOGIN RESPONSE:", data); // 🔍 DEBUG
-    alert("ROLE FROM BACKEND: " + data.role);
-
     if (!res.ok) {
       alert(data.message || data.msg || "Login failed");
       return;
@@ -35,6 +32,5 @@ async function login() {
 
   } catch (e) {
     alert("Login error: " + e.message);
-    console.error(e);
   }
 }

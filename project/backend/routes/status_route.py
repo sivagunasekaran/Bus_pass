@@ -13,11 +13,9 @@ status_bp = Blueprint("status", __name__, url_prefix="/api")
 def get_status():
     user_id = int(get_jwt_identity())
     today = date.today()
-    
-    print(f"\n🔍 [STATUS-CHECK] User {user_id} checking status on {today}")
 
     # ==================================================
-    # 🔥 ALWAYS ENFORCE EXPIRY FIRST
+    # Enforce expiry before retrieving status
     # ==================================================
     bus_pass = (
         BusPass.query
@@ -30,14 +28,12 @@ def get_status():
     )
 
     if bus_pass:
-        print(f"📋 Found pass ID {bus_pass.id}: status={bus_pass.status}, valid_to={bus_pass.valid_to}, is_active={bus_pass.is_active}")
         enforce_expiry(bus_pass)
-        print(f"✅ Expiry check completed for pass {bus_pass.id}")
     else:
-        print(f"⚠️  No active pass found for user {user_id}")
+        pass
 
     # ==================================================
-    # 1️⃣ CHECK RENEWAL FIRST (IGNORE REJECTED)
+    # Check renewal first (ignore rejected)
     # ==================================================
     renewal = (
         PassRenewal.query
@@ -79,7 +75,7 @@ def get_status():
         }), 200
 
     # ==================================================
-    # 2️⃣ FALLBACK TO NEW PASS
+    # Fallback to new pass
     # ==================================================
     if not bus_pass:
         return jsonify({"has_pass": False}), 200

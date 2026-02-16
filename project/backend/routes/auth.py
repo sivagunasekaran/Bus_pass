@@ -9,7 +9,6 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 @auth_bp.route("/register", methods=["POST"])
 def register():
     data = request.get_json()
-    print("REGISTER DATA:", data)
 
     if not data:
         return {"message": "Invalid JSON"}, 400
@@ -33,8 +32,6 @@ def register():
 
     db.session.add(user)
     db.session.commit()
-
-    print("USER INSERTED:", user.id)
 
     return {"message": "Registration successful"}, 201
 

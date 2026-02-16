@@ -1,16 +1,12 @@
-console.log("register.js LOADED");
-
 document.addEventListener("DOMContentLoaded", () => {
 
   const btn = document.getElementById("registerBtn");
 
   if (!btn) {
-    console.error("Register button not found");
     return;
   }
 
   btn.addEventListener("click", async () => {
-    console.log("REGISTER BUTTON CLICKED");
 
     const name = document.getElementById("name")?.value.trim();
     const email = document.getElementById("email")?.value.trim();
@@ -42,8 +38,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = await res.json().catch(() => ({}));
 
-      console.log("REGISTER RESPONSE:", res.status, data);
-
       if (!res.ok) {
         alert(data.message || "Registration failed");
         return;
@@ -53,7 +47,6 @@ document.addEventListener("DOMContentLoaded", () => {
       window.location.href = "login.html";
 
     } catch (err) {
-      console.error("Register error:", err);
       alert("Unable to reach server");
     }
   });

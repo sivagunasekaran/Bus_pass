@@ -1,5 +1,3 @@
-console.log("🔥 renew-pass.js LOADED");
-
 // ================= GLOBAL STATE =================
 let map = null;
 let startMarker = null;

@@ -21,7 +21,7 @@ def create_order():
     user_id = int(get_jwt_identity())
     data = request.get_json()
 
-    amount = int(data["amount"]) * 100  # ₹ → paise
+    amount = int(data["amount"]) * 100
 
    
     order = client.order.create({

@@ -1,7 +1,4 @@
-console.log("apply_pass.js LOADED");
-
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("✅ Page ready");
 
   // ==============================
   // ELEMENT REFERENCES
@@ -11,8 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const calculateBtn = document.getElementById("calculateFareBtn");
   const finalFareBox = document.getElementById("finalFare");
   const submitBtn = document.getElementById("submitBtn");
-
-  console.log("Elements:", { calculateBtn, submitBtn, passType, passDuration });
 
   let fareCalculated = false;
   let totalFareValue = 0;
@@ -31,8 +26,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==============================
   if (calculateBtn) {
     calculateBtn.addEventListener("click", () => {
-      console.log("💰 Calculate Fare clicked");
-      console.log("Route selected:", window.routeSelected, "Base fare:", window.baseFare);
 
       if (!window.routeSelected || !window.selectedRoute || window.baseFare == null) {
         alert("❌ Please select route first");
@@ -50,9 +43,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       finalFareBox.innerText = `Total Fare (${months} Month${months > 1 ? "s" : ""}): ₹${totalFareValue}`;
       fareCalculated = true;
-
-    
-      console.log("✅ Fare calculated:", totalFareValue);
     });
   } else {
     console.error("❌ Calculate button not found");
@@ -72,7 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==============================
   if (submitBtn) {
     submitBtn.addEventListener("click", async (e) => {
-      console.log("🔴 SUBMIT CLICKED");
       
       // Show alert immediately
       alert("Application is submitted! You will receive an email once it's processed.");
@@ -109,8 +98,6 @@ document.addEventListener("DOMContentLoaded", () => {
         formData.append("pass_duration", passDuration.value || 1);
         formData.append("id_proof", idProof);
 
-        console.log("Sending request...");
-        
         const res = await fetch("http://127.0.0.1:5001/api/pass/apply", {
           method: "POST",
           headers: {
@@ -119,10 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
           body: formData
         });
 
-        console.log("Response status:", res.status);
-        
         const data = await res.json();
-        console.log("Response data:", data);
 
         if (res.ok) {
           alert("✅ Pass applied successfully!\n\nEmail will be sent to you.");

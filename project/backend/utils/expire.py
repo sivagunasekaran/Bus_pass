@@ -11,27 +11,17 @@ def enforce_expiry(bus_pass):
     """
 
     if not bus_pass:
-        print("❌ [EXPIRE] No bus pass provided")
         return False
-
-    print(f"🔍 [EXPIRE] Checking pass ID {bus_pass.id}: status={bus_pass.status}, valid_to={bus_pass.valid_to}, is_active={bus_pass.is_active}")
 
     # Only PAID passes can expire
     if bus_pass.status != "PAID":
-        print(f"⏭️  [EXPIRE] Pass {bus_pass.id} status is {bus_pass.status}, not PAID - skipping expiry")
         return bus_pass.is_active == 1
 
-    today = date.today()
-    print(f"📅 [EXPIRE] Today: {today}, Pass expires: {bus_pass.valid_to}")
-
-    # 🔥 Check if pass is actually expired
+    # Check if pass is actually expired
     if bus_pass.valid_to < today:
-        print(f"⚠️  [EXPIRE] Pass {bus_pass.id} IS EXPIRED")
-        
         # Deactivate if not already
         if bus_pass.is_active == 1:
             bus_pass.is_active = 0
-            print(f"🔴 [EXPIRE] Deactivating pass {bus_pass.id}")
 
         # expire related renewals (optional but recommended)
         PassRenewal.query.filter(
@@ -43,12 +33,10 @@ def enforce_expiry(bus_pass):
         )
 
         db.session.commit()
-        print(f"💾 [EXPIRE] Database committed for pass {bus_pass.id}")
 
-        # 🔔 SEND EMAIL ONCE
+        # Send expiry email once
         try:
             if bus_pass.user:
-                print(f"📧 [EXPIRE] Sending expiry email to {bus_pass.user.email}")
                 send_email(
                     to=bus_pass.user.email,
                     subject="Bus Pass Expired",
@@ -59,13 +47,11 @@ def enforce_expiry(bus_pass):
                         "Thank you."
                     )
                 )
-                print(f"✅ [EXPIRE] Expiry email sent successfully for pass {bus_pass.id}")
             else:
-                print(f"⚠️  [EXPIRE] User not found for pass {bus_pass.id}, skipping email")
+                pass
         except Exception as e:
-            print(f"❌ [EXPIRE] Failed to send expiry email for pass {bus_pass.id}: {str(e)}")
+            pass
 
         return False
     else:
-        print(f"✅ [EXPIRE] Pass {bus_pass.id} is still valid (expires {bus_pass.valid_to})")
         return bus_pass.is_active == 1

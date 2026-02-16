@@ -1,13 +1,9 @@
-// ==============================
-// GLOBAL STATE (USED BY apply_pass.js)
-// ==============================
+// Global state (used by apply_pass.js)
 window.selectedRoute = null;
 window.routeSelected = false;
 window.baseFare = null;
 
-// ==============================
-// MAP VARIABLES
-// ==============================
+// Map variables
 let map;
 let routeLayerGroup;
 let startMarker = null;
@@ -39,9 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
   bindReset();
 });
 
-// ==============================
-// MAP INITIALIZATION
-// ==============================
+// Map initialization
 function initMap() {
   map = L.map("map", {
     center: chennaiCenter,
@@ -62,9 +56,7 @@ function initMap() {
   map.on("click", handleMapClick);
 }
 
-// ==============================
-// MAP CLICK HANDLER
-// ==============================
+// Map click handler
 async function handleMapClick(e) {
   if (!startLatLng) {
     startLatLng = e.latlng;
@@ -86,9 +78,7 @@ async function handleMapClick(e) {
   }
 }
 
-// ==============================
-// TEXT ROUTE BUTTON
-// ==============================
+// Route button handler
 function bindTextRoute() {
   drawRouteBtn.addEventListener("click", async () => {
     const sText = startInput.value.trim();
@@ -133,7 +123,7 @@ async function finalizeRoute(startName, endName) {
   const distanceKm = Number(rawDistance.toFixed(2));
   const calculatedFare = calculateFare(distanceKm);
 
-  // 🔥 SINGLE SOURCE OF TRUTH
+  // Single source of truth
   window.selectedRoute = {
     start: startName,
     end: endName,
@@ -146,16 +136,12 @@ async function finalizeRoute(startName, endName) {
   routeInfo.innerText = `Distance: ${distanceKm} km`;
   fareInfo.innerText = `Base Fare (1 Month): ₹${calculatedFare}`;
 
-  console.log("✅ ROUTE STORED:", window.selectedRoute);
-
   if (typeof window.onRouteCalculated === "function") {
     window.onRouteCalculated();
   }
 }
 
-// ==============================
-// DRAW ROUTE (OSRM)
-// ==============================
+// Draw route using OSRM
 async function drawRoute(start, end) {
   const url =
     `https://router.project-osrm.org/route/v1/driving/` +
@@ -180,9 +166,7 @@ async function drawRoute(start, end) {
   map.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
 }
 
-// ==============================
-// RESET ROUTE
-// ==============================
+// Reset route
 function clearRouteVisuals() {
   routeLayerGroup.clearLayers();
   startMarker = null;
@@ -215,16 +199,12 @@ function clearRoute() {
   }
 }
 
-// ==============================
-// RESET BUTTON
-// ==============================
+// Reset button
 function bindReset() {
   resetRoute.addEventListener("click", clearRoute);
 }
 
-// ==============================
-// DISTANCE & FARE
-// ==============================
+// Distance and fare calculation
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -246,9 +226,7 @@ function calculateFare(distance) {
   return 700;
 }
 
-// ==============================
-// GEOCODING (NOMINATIM)
-// ==============================
+// Geocoding with Nominatim
 async function getLatLngFromText(place) {
   const url =
     `https://nominatim.openstreetmap.org/search?format=json&q=` +

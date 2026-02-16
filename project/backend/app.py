@@ -65,17 +65,5 @@ def view_id_proof(filename):
     return send_from_directory(upload_dir, filename)
 
 
-# ---------- TEST EMAIL ROUTE ----------
-# @app.route("/test-email")
-# def test_email():
-#     msg = Message(
-#         subject="Test Email from Bus Pass App",
-#         recipients=["siva68f9970@gmail.com"],
-#         body="✅ Email setup is working!"
-#     )
-#     mail.send(msg)
-#     return "Email sent successfully"
-
-
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5001, debug=True)

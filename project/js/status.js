@@ -1,4 +1,4 @@
-let STATUS_DATA = null;   // 🔥 GLOBAL STORE
+let STATUS_DATA = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
 
@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // 🔥 STORE GLOBALLY
+  // Store globally
   STATUS_DATA = data;
 
   // ===== UPDATE UI =====
@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (data.can_pay) {
     payBtn.style.display = "block";
-    payBtn.onclick = handlePayment;   // 🔥 attach handler
+    payBtn.onclick = handlePayment;
   } else {
     payBtn.style.display = "none";
   }
@@ -72,9 +72,7 @@ async function handlePayment() {
   }
 
   try {
-    // ===============================
-    // 1️⃣ CREATE RAZORPAY ORDER
-    // ===============================
+    // Create Razorpay order
     const res = await fetch(
       "http://127.0.0.1:5001/api/payment/create-order",
       {
@@ -96,24 +94,18 @@ async function handlePayment() {
       return;
     }
 
-    // ===============================
-    // 2️⃣ RAZORPAY OPTIONS
-    // ===============================
+    // Razorpay options
     const options = {
-      key: order.key,              // Razorpay Test Key
-      amount: order.amount,        // in paise
+      key: order.key,
+      amount: order.amount,
       currency: "INR",
       name: "Bus Pass",
       description: "Bus Pass Payment",
       order_id: order.order_id,
 
       handler: async function (response) {
-        console.log("Razorpay response:", response);
-
         try {
-          // ===============================
-          // 3️⃣ VERIFY PAYMENT
-          // ===============================
+          // Verify payment
           const verifyRes = await fetch(
             "http://127.0.0.1:5001/api/payment/verify",
             {
@@ -141,7 +133,6 @@ async function handlePayment() {
           window.location.reload();
 
         } catch (err) {
-          console.error("❌ Verification error:", err);
           alert("Server error during payment verification");
         }
       },
@@ -151,14 +142,11 @@ async function handlePayment() {
       }
     };
 
-    // ===============================
-    // 4️⃣ OPEN RAZORPAY
-    // ===============================
+    // Open Razorpay
     const rzp = new Razorpay(options);
     rzp.open();
 
   } catch (err) {
-    console.error("❌ Payment error:", err);
     alert("Payment failed");
   }
 }

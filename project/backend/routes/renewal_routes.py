@@ -47,14 +47,12 @@ def get_eligible_pass():
         }), 200
 
     except Exception as e:
-        print("🔥 ELIGIBLE ERROR:", e)
         return jsonify({
             "message": "Server error",
             "error": str(e)
         }), 500
 
-# =========================================================
-# APPLY RENEWAL
+# Apply renewal
 # =========================================================
 
 @renewal_bp.route("/apply", methods=["POST"])
@@ -63,6 +61,8 @@ def apply_renewal():
     try:
         user_id = int(get_jwt_identity())
         data = request.get_json()
+        print("📦 RENEWAL PAYLOAD:", data)
+        print("📆 duration_months raw:", data.get("duration_months"))
         print("📦 RENEWAL PAYLOAD:", data)
         print("📆 duration_months raw:", data.get("duration_months"))
 
@@ -144,7 +144,6 @@ def apply_renewal():
         }), 201
 
     except Exception as e:
-        print("🔥 APPLY RENEWAL ERROR:", e)
         return jsonify({
             "message": "Server error",
             "error": str(e)
