@@ -66,11 +66,6 @@ def approve_pass(pass_id):
 
     db.session.commit()
 
-    # 📧 SEND APPROVAL EMAIL
-
-    except Exception as e:
-        print(f"⚠️  Failed to send approval email: {str(e)}")
-
     return jsonify({"message": "Pass approved"}), 200
 
 
@@ -94,11 +89,6 @@ def reject_pass(pass_id):
     bus_pass.is_active = 0
 
     db.session.commit()
-
-    # 📧 SEND REJECTION EMAIL
-
-    except Exception as e:
-        print(f"⚠️  Failed to send rejection email: {str(e)}")
 
     return jsonify({"message": "Pass rejected"}), 200
 

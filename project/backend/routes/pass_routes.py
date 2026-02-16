@@ -109,11 +109,11 @@ def apply_pass():
                 )
             )
         except Exception as e:
-            # Don't fail the entire request just because email failed
+            # Email sending failed, but don't fail the entire request
+            pass
 
         # ==================================================
         # Response
-        # ==================================================
         # ==================================================
         response_data = {
             "message": "Pass applied successfully",
@@ -121,11 +121,7 @@ def apply_pass():
             "valid_to": valid_to.isoformat(),
             "email_sent": True
         }
-        print(f"✅ [200] Returning success response")
         return jsonify(response_data), 201
 
     except Exception as e:
-        print(f"❌ CRITICAL ERROR in apply_pass: {str(e)}")
-        import traceback
-        traceback.print_exc()
         return jsonify({"message": "Server error: " + str(e)}), 500
