@@ -2,54 +2,77 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pass Status</title>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 500px;
-      margin: 40px auto;
-    }
-    p {
-      margin: 8px 0;
-    }
-    strong {
-      display: inline-block;
-      width: 140px;
-    }
-    #payBtn {
-      margin-top: 20px;
-      padding: 10px 16px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-  </style>
+  <!-- Status Card CSS -->
+  <link rel="stylesheet" href="css/status.css">
 </head>
 
 <body>
+  <header class="page-header">
+    <h1>Bus Pass Card Status</h1>
+    <h2>View Pass / Status</h2>
+  </header>
 
-  <h2>Pass Status</h2>
 
-  <p><strong>Applicant Name:</strong> <span id="name">-</span></p>
-  <p><strong>Pass Type:</strong> <span id="type">-</span></p>
-  <p><strong>Route:</strong> <span id="route">-</span></p>
-  <p><strong>Expiry Date:</strong> <span id="expiry">-</span></p>
-  <p><strong>Fare:</strong> <span id="fare">-</span></p>
-  <p><strong>Approval Status:</strong> <span id="approval">-</span></p>
-  <p><strong>Pass Status:</strong> <span id="passStatus">-</span></p>
-  <div id="daysRow" style="display:none;">
-  <strong>Days Left:</strong>
-  <span id="daysLeft"></span>
-</div>
+  <div class="status-container">
+    <div class="status-card">
 
-  <button id="payBtn" style="display:none;">
-    Pay Now
-  </button>
+      <h2>Bus Pass Card</h2>
+
+      <div class="status-row">
+        <span class="status-label">Applicant Name</span>
+        <span class="status-value" id="name">-</span>
+      </div>
+
+      <div class="status-row">
+        <span class="status-label">Pass Type</span>
+        <span class="status-value" id="type">-</span>
+      </div>
+
+      <div class="status-row">
+        <span class="status-label">Route</span>
+        <span class="status-value" id="route">-</span>
+      </div>
+
+      <div class="status-row">
+        <span class="status-label">Expiry Date</span>
+        <span class="status-value" id="expiry">-</span>
+      </div>
+
+      <div class="status-row">
+        <span class="status-label">Fare</span>
+        <span class="status-value" id="fare">-</span>
+      </div>
+
+      <div class="status-row">
+        <span class="status-label">Status</span>
+        <span class="badge pending" id="approval">-</span>
+      </div>
+
+      <div class="status-row">
+        <span class="status-label">Pass Status</span>
+        <span class="badge inactive" id="passStatus">-</span>
+      </div>
+
+      <!-- DAYS LEFT -->
+      <div id="daysRow" class="days-left" style="display:none;">
+        Days Left: <span id="daysLeft"></span>
+      </div>
+
+      <!-- PAY BUTTON -->
+      <button id="payBtn" style="display:none;">
+        Pay Now
+      </button>
+
+    </div>
+  </div>
 
   <!-- Razorpay -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-  <!-- Status logic -->
+  <!-- Status JS -->
   <script src="js/status.js"></script>
 
 </body>

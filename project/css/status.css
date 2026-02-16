@@ -5,29 +5,174 @@ body {
  
 }
 
-.container {
+.status-container {
     width: 650px;
     margin: 19px auto;
     background: #009aff2b;
     padding: 30px;
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    align-items: center;
+    margin-top: 50px;
+    margin-bottom: 50px;
 }
 
 
-.back-btn {
-  display: inline-block;
-  margin: 15px 20px;
-  padding: 8px 16px;
-  background-color: #000;        
-  color: #fff;                   
-  text-decoration: none;
-  font-size: 15px;
+.page-header {
+  width: 100%;
+  text-align: center;
+  padding: 40px 0;
+  background: linear-gradient(135deg, #060606, #03264d);
+
+}
+
+.page-header h1 {
+  margin: 0;
+  color: #fff;
+  font-size: 28px;
+  font-weight: 600;
+}
+.page-header h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 400;
+  margin-top: 8px;
+}
+
+
+h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #1a237e;
+  letter-spacing: 0.5px;
+}
+/* =========================
+   CARD
+========================= */
+.status-card {
+ 
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px 28px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 0.4s ease-in-out;
+  align-content: center;
+}
+
+/* =========================
+   HEADER
+========================= */
+.status-card h2 {
+  margin: 0 0 20px;
+  text-align: center;
+  font-size: 22px;
+  color: #1f2933;
+}
+
+/* =========================
+   ROWS
+========================= */
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 14.5px;
+}
+
+.status-label {
+  color: #6b806e;
   font-weight: 500;
-  border-radius: 6px;
-  transition: background-color 0.3s ease;
 }
 
-.back-btn:hover {
-  background-color: #333;
+.status-value {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* =========================
+   BADGES
+========================= */
+.badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Approval Status */
+.badge.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.badge.approved {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.badge.rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Pass Status */
+.badge.active {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.badge.inactive {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+/* =========================
+   DAYS LEFT
+========================= */
+.days-left {
+  margin-top: 14px;
+  padding: 10px;
+  text-align: center;
+  border-radius: 10px;
+  background: #f0f9ff;
+  color: #0369a1;
+  font-weight: 600;
+}
+
+/* =========================
+   PAY BUTTON
+========================= */
+#payBtn {
+  width: 100%;
+  margin-top: 18px;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+#payBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.4);
+}
+
+/* =========================
+   ANIMATION
+========================= */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
