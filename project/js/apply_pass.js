@@ -2,16 +2,21 @@ console.log("apply_pass.js LOADED - PORT 5001 VERSION");
 
 document.addEventListener("DOMContentLoaded", () => {
 
+  // ==============================
+  // ELEMENT REFERENCES
+  // ==============================
   const passType     = document.getElementById("passType");
-  const passDuration = document.getElementById("passDuration");
+  const passDuration = document.getElementById("passDuration"); // 🔥 FIX
   const calculateBtn = document.getElementById("calculateFareBtn");
   const finalFareBox = document.getElementById("finalFare");
-  const applyForm    = document.getElementById("applyForm");
   const submitBtn    = document.getElementById("submitBtn");
 
   let fareCalculated = false;
-  let totalFareValue = null;
+  let totalFareValue = 0;
 
+  // ==============================
+  // DISCOUNT LOGIC
+  // ==============================
   function applyDiscount(baseFare, type) {
     if (type === "elder") return Math.round(baseFare * 0.7);
     if (type === "student") return Math.round(baseFare * 0.8);
@@ -23,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==============================
   calculateBtn.addEventListener("click", () => {
 
-    if (!window.routeSelected || window.baseFare === null) {
+    if (!window.routeSelected || !window.selectedRoute || window.baseFare == null) {
       alert("Please select route first");
       return;
     }
@@ -35,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const discountedFare = applyDiscount(window.baseFare, passType.value);
     const months = parseInt(passDuration.value, 10);
+
     totalFareValue = discountedFare * months;
 
     finalFareBox.innerText =
@@ -53,73 +59,93 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // ==============================
-  // SUBMIT APPLICATION (🔥 FIXED)
+  // SUBMIT APPLICATION
+  // ==============================
   submitBtn.addEventListener("click", async () => {
 
-  if (!fareCalculated) {
-    alert("Please calculate fare before submitting");
-    return;
-  }
+    if (!fareCalculated) {
+      alert("Please calculate fare before submitting");
+      return;
+    }
 
-  // 🔐 JWT
-  const token =
-    localStorage.getItem("access_token") ||
-    localStorage.getItem("token");
+    if (!window.selectedRoute) {
+      alert("Route not selected properly");
+      return;
+    }
 
-  if (!token || token.split(".").length !== 3) {
-    alert("Invalid session. Please login again.");
-    localStorage.clear();
-    window.location.href = "login.html";
-    return;
-  }
+    const applicantNameInput = document.getElementById("name");
+    if (!applicantNameInput) {
+      alert("Applicant name field not found");
+      return;
+    }
 
-  // ✅ BUILD FORMDATA (THIS WAS MISSING)
-  const formData = new FormData();
+    const applicantName = applicantNameInput.value.trim();
+    if (!applicantName) {
+      alert("Please enter applicant name");
+      return;
+    }
 
-  // Route info (from map.js)
-  const routeInfoText = document.getElementById("route-info").innerText;
+    // ==============================
+    // JWT TOKEN CHECK
+    // ==============================
+    const token =
+      localStorage.getItem("access_token") ||
+      localStorage.getItem("token");
 
-  // File input (ID proof)
-  const fileInput = document.querySelector('input[type="file"]');
-
-  formData.append("route", routeInfoText);
-  formData.append("fare", totalFareValue);
-
-  if (fileInput && fileInput.files.length > 0) {
-    formData.append("id_proof", fileInput.files[0]);
-  }
-
-  try {
-    const res = await fetch("http://127.0.0.1:5001/api/pass/apply", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`
-        // ❌ DO NOT set Content-Type
-      },
-      body: formData
-    });
-
-    if (res.status === 401 || res.status === 422) {
-      alert("Session expired. Please login again.");
+    if (!token || token.split(".").length !== 3) {
+      alert("Invalid session. Please login again.");
       localStorage.clear();
       window.location.href = "login.html";
       return;
     }
 
-    const data = await res.json().catch(() => ({}));
+    // ==============================
+    // BUILD FORM DATA
+    // ==============================
+    const formData = new FormData();
 
-    if (!res.ok) {
-      alert(data.message || data.msg || "Submission failed");
-      return;
+    formData.append("applicant_name", applicantName);
+    formData.append(
+      "route",
+      `${window.selectedRoute.start} → ${window.selectedRoute.end}`
+    );
+    formData.append("distance", window.selectedRoute.distanceKm);
+    formData.append("fare", totalFareValue);
+
+    // 🔥 CRITICAL FIX — SEND PASS DURATION
+    formData.append("pass_duration", passDuration.value);
+
+    // Optional ID proof
+    const fileInput = document.getElementById("idProof");
+    if (fileInput && fileInput.files.length > 0) {
+      formData.append("id_proof", fileInput.files[0]);
     }
 
-    alert(data.message || "Pass applied successfully");
+    // ==============================
+    // SEND TO BACKEND
+    // ==============================
+    try {
+      const res = await fetch("http://127.0.0.1:5001/api/pass/apply", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        body: formData
+      });
 
-  } catch (err) {
-    console.error("Network / server error:", err);
-    alert("Unable to reach server. Make sure Flask is running on port 5001.");
-  }
-});
+      const data = await res.json().catch(() => ({}));
 
+      if (!res.ok) {
+        alert(data.message || data.msg || "Submission failed");
+        return;
+      }
+
+      alert(data.message || "✅ Pass applied successfully");
+
+    } catch (err) {
+      console.error("Network / server error:", err);
+      alert("Unable to reach server. Make sure Flask is running on port 5001.");
+    }
   });
-;
+
+});

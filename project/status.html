@@ -2,21 +2,54 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Renewal Status</title>
+  <title>Pass Status</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 40px auto;
+    }
+    p {
+      margin: 8px 0;
+    }
+    strong {
+      display: inline-block;
+      width: 140px;
+    }
+    #payBtn {
+      margin-top: 20px;
+      padding: 10px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 
 <body>
 
-  <h3 id="renewalStatus">Checking renewal status...</h3>
+  <h2>Pass Status</h2>
+
+  <p><strong>Applicant Name:</strong> <span id="name">-</span></p>
+  <p><strong>Pass Type:</strong> <span id="type">-</span></p>
+  <p><strong>Route:</strong> <span id="route">-</span></p>
+  <p><strong>Expiry Date:</strong> <span id="expiry">-</span></p>
+  <p><strong>Fare:</strong> <span id="fare">-</span></p>
+  <p><strong>Approval Status:</strong> <span id="approval">-</span></p>
+  <p><strong>Pass Status:</strong> <span id="passStatus">-</span></p>
+  <div id="daysRow" style="display:none;">
+  <strong>Days Left:</strong>
+  <span id="daysLeft"></span>
+</div>
 
   <button id="payBtn" style="display:none;">
-    Pay Renewal Fee
+    Pay Now
   </button>
 
-  <!-- Razorpay library -->
+  <!-- Razorpay -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-  <!-- Your JS file -->
+  <!-- Status logic -->
   <script src="js/status.js"></script>
 
 </body>

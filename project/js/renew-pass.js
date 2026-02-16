@@ -1,23 +1,60 @@
+console.log("🔥 renew-pass.js LOADED");
+
 // ================= GLOBAL STATE =================
 let map = null;
-
 let startMarker = null;
 let endMarker = null;
 let routeLine = null;
-
 let startLatLng = null;
 let endLatLng = null;
 
-const EXISTING_BASE_FARE = 300;
-let currentBaseFare = EXISTING_BASE_FARE;
-let routeSelected = false;
+let OLD_BASE_FARE = 0;
+let NEW_BASE_FARE = 0;
+let ROUTE_CHANGED = false;
+let CALCULATED_FARE = 0;
+let BUS_PASS_ID = null;
+
+let REQUESTED_ROUTE = null;
+let REQUESTED_DISTANCE = null;
 
 // ================= CONSTANTS =================
 const chennaiCenter = [13.0827, 80.2707];
 const chennaiBounds = [[12.9, 80.1], [13.3, 80.4]];
 
 // ================= DOM READY =================
-document.addEventListener("DOMContentLoaded", setupRenewPass);
+document.addEventListener("DOMContentLoaded", () => {
+
+  const token =
+    localStorage.getItem("access_token") ||
+    localStorage.getItem("token");
+
+  if (!token) {
+    alert("Please login again");
+    window.location.href = "login.html";
+    return;
+  }
+
+  fetch("http://127.0.0.1:5001/api/renewal/eligible", {
+    headers: { Authorization: "Bearer " + token }
+  })
+    .then(res => {
+      if (!res.ok) throw new Error("No approved pass");
+      return res.json();
+    })
+    .then(data => {
+      document.getElementById("userName").innerText = data.user_name;
+      document.getElementById("currentRoute").innerText = data.route;
+      document.getElementById("expiryDate").innerText = data.valid_to;
+
+      OLD_BASE_FARE = Number(data.base_fare);
+      BUS_PASS_ID = data.bus_pass_id;
+
+      setupRenewPass();
+    })
+    .catch(() => {
+      alert("No approved pass found for renewal");
+    });
+});
 
 // ================= SETUP =================
 function setupRenewPass() {
@@ -29,46 +66,51 @@ function setupRenewPass() {
   const endInput = document.getElementById("endInput");
   const routeInfo = document.getElementById("route-info");
   const fareInfo = document.getElementById("fare-info");
-  const resetBtn = document.getElementById("resetRoute");
-  const calculateRenewal = document.getElementById("calculateRenewal");
   const duration = document.getElementById("duration");
   const renewFare = document.getElementById("renewFare");
   const renewForm = document.getElementById("renewForm");
+  const calculateBtn = document.getElementById("calculateRenewal");
+  const resetBtn = document.getElementById("resetRoute");
 
-  // ---- Change Route ----
+  // initial state
+  routeSection.style.display = "none";
+  resetBtn.style.display = "none";
+
+  // ---- TOGGLE CHANGE ROUTE ----
   changeRoute.addEventListener("change", () => {
-    routeSection.style.display = changeRoute.checked ? "block" : "none";
+    ROUTE_CHANGED = changeRoute.checked;
 
-    if (changeRoute.checked) {
-      setTimeout(() => {
-        initMapIfNeeded();
-        map.invalidateSize();
-        map.setView(chennaiCenter, 13);
-      }, 200);
+    routeSection.style.display = ROUTE_CHANGED ? "block" : "none";
+    resetBtn.style.display = ROUTE_CHANGED ? "inline-block" : "none";
+
+    if (ROUTE_CHANGED) {
+      initMapIfNeeded();
+      setTimeout(() => map.invalidateSize(), 200);
     } else {
       resetRoute();
     }
   });
 
-  // ---- Draw Route (Text Input) ----
+  // ---- DRAW NEW ROUTE ----
   drawRouteBtn.addEventListener("click", async () => {
-    initMapIfNeeded();
 
-    const startText = startInput.value.trim();
-    const endText = endInput.value.trim();
+    if (!ROUTE_CHANGED) return;
 
-    if (!startText || !endText) {
+    const sText = startInput.value.trim();
+    const eText = endInput.value.trim();
+
+    if (!sText || !eText) {
       alert("Enter both start and end locations");
       return;
     }
 
-    clearMapLayersOnly();
+    clearMap();
 
-    const s = await getLatLngFromText(startText);
-    const e = await getLatLngFromText(endText);
+    const s = await getLatLngFromText(sText);
+    const e = await getLatLngFromText(eText);
 
     if (!s || !e) {
-      alert("Invalid Chennai locations");
+      alert("Invalid locations");
       return;
     }
 
@@ -81,73 +123,71 @@ function setupRenewPass() {
     await drawRoute(s, e);
 
     const dist = calculateDistance(s.lat, s.lng, e.lat, e.lng);
-    currentBaseFare = calculateFare(dist);
-    routeSelected = true;
+    NEW_BASE_FARE = calculateFare(dist);
 
-    routeInfo.innerText = `Distance: ${dist.toFixed(2)} km`;
-    fareInfo.innerText = `Base Fare: ₹${currentBaseFare}`;
+    REQUESTED_ROUTE = `${sText} → ${eText}`;
+    REQUESTED_DISTANCE = dist.toFixed(2);
+
+    routeInfo.innerText = `Distance: ${REQUESTED_DISTANCE} km`;
+    fareInfo.innerText = `New Base Fare: ₹${NEW_BASE_FARE}`;
   });
 
-  // ---- Calculate Renewal Fare ----
-  calculateRenewal.addEventListener("click", () => {
+  // ---- CALCULATE RENEWAL ----
+  calculateBtn.addEventListener("click", () => {
 
-    if (!changeRoute.checked) {
-      currentBaseFare = EXISTING_BASE_FARE;
-      routeSelected = true;
-    }
-
-    if (changeRoute.checked && !routeSelected) {
-      alert("Please select a route first");
+    const months = Number(duration.value);
+    if (!months) {
+      alert("Select duration");
       return;
     }
 
-    const days = Number(duration.value);
-    const total = days === 90 ? currentBaseFare * 3 : currentBaseFare;
+    const baseFare = ROUTE_CHANGED ? NEW_BASE_FARE : OLD_BASE_FARE;
 
-    renewFare.innerText = `Renewal Fare: ₹${total}`;
+    if (ROUTE_CHANGED && baseFare === 0) {
+      alert("Please select a new route first");
+      return;
+    }
+
+    CALCULATED_FARE = baseFare * months;
+    renewFare.innerText = `Renewal Fare: ₹${CALCULATED_FARE}`;
   });
 
-  // ---- Reset Route ----
+  // ---- RESET ROUTE ----
   resetBtn.addEventListener("click", (e) => {
     e.preventDefault();
     resetRoute();
   });
 
-  // ---- SUBMIT RENEWAL (BACKEND INTEGRATION) ----
+  // ---- SUBMIT RENEWAL ----
   renewForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    if (!renewFare.innerText) {
-      alert("Please calculate renewal fare before submitting");
+    if (!CALCULATED_FARE) {
+      alert("Please calculate renewal fare first");
       return;
     }
 
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("Please login again");
-      window.location.href = "login.html";
-      return;
-    }
+    const token =
+      localStorage.getItem("access_token") ||
+      localStorage.getItem("token");
 
-    const busPassId = localStorage.getItem("bus_pass_id");
-    if (!busPassId) {
-      alert("Bus pass not found");
-      return;
-    }
+    const payload = {
+      bus_pass_id: BUS_PASS_ID,
+      renewal_fare: CALCULATED_FARE,
+      route_changed: ROUTE_CHANGED,
+      requested_route: ROUTE_CHANGED ? REQUESTED_ROUTE : null,
+      requested_distance_km: ROUTE_CHANGED ? REQUESTED_DISTANCE : null
+    };
 
-    // Extract number from "₹300"
-    const amount = Number(renewFare.innerText.replace(/[^\d]/g, ""));
+    console.log("📤 Sending payload:", payload);
 
     const res = await fetch("http://127.0.0.1:5001/api/renewal/apply", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Bearer " + token
+        Authorization: "Bearer " + token
       },
-      body: JSON.stringify({
-        bus_pass_id: busPassId,
-        renewal_fare: amount
-      })
+      body: JSON.stringify(payload)
     });
 
     const data = await res.json();
@@ -157,87 +197,45 @@ function setupRenewPass() {
       return;
     }
 
-    alert("Renewal applied successfully");
-    window.location.href = "status.html";
+    alert("✅ Renewal applied successfully");
   });
 }
 
-// ================= MAP INIT =================
+// ================= MAP HELPERS =================
 function initMapIfNeeded() {
   if (map) return;
 
   map = L.map("map", {
     center: chennaiCenter,
     zoom: 13,
-    minZoom: 12,
-    maxZoom: 18,
     maxBounds: chennaiBounds,
     maxBoundsViscosity: 1.0
   });
 
   L.tileLayer(
-    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-    { attribution: "© OpenStreetMap © CARTO" }
+    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
   ).addTo(map);
-
-  map.on("click", handleMapClick);
 }
 
-// ================= MAP CLICK =================
-async function handleMapClick(e) {
-
-  if (!startLatLng) {
-    startLatLng = e.latlng;
-    startMarker = L.marker(e.latlng).addTo(map).bindPopup("Start").openPopup();
-    return;
-  }
-
-  if (!endLatLng) {
-    endLatLng = e.latlng;
-    endMarker = L.marker(e.latlng).addTo(map).bindPopup("End").openPopup();
-
-    await drawRoute(startLatLng, endLatLng);
-
-    const dist = calculateDistance(
-      startLatLng.lat, startLatLng.lng,
-      endLatLng.lat, endLatLng.lng
-    );
-
-    currentBaseFare = calculateFare(dist);
-    routeSelected = true;
-  }
-}
-
-// ================= RESET HELPERS =================
-function clearMapLayersOnly() {
+function clearMap() {
   if (!map) return;
-
   if (startMarker) map.removeLayer(startMarker);
   if (endMarker) map.removeLayer(endMarker);
   if (routeLine) map.removeLayer(routeLine);
-
-  startMarker = null;
-  endMarker = null;
-  routeLine = null;
-  startLatLng = null;
-  endLatLng = null;
-  routeSelected = false;
+  startMarker = endMarker = routeLine = null;
 }
 
 function resetRoute() {
-  clearMapLayersOnly();
-
-  currentBaseFare = EXISTING_BASE_FARE;
+  clearMap();
+  NEW_BASE_FARE = 0;
+  REQUESTED_ROUTE = null;
+  REQUESTED_DISTANCE = null;
 
   document.getElementById("startInput").value = "";
   document.getElementById("endInput").value = "";
   document.getElementById("route-info").innerText = "";
   document.getElementById("fare-info").innerText = "";
   document.getElementById("renewFare").innerText = "";
-
-  if (map) {
-    map.setView(chennaiCenter, 13);
-  }
 }
 
 // ================= UTILS =================
@@ -261,8 +259,9 @@ function calculateFare(distance) {
 }
 
 async function getLatLngFromText(place) {
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${place}, Chennai&limit=1`;
-  const res = await fetch(url);
+  const res = await fetch(
+    `https://nominatim.openstreetmap.org/search?format=json&q=${place}, Chennai&limit=1`
+  );
   const data = await res.json();
   return data.length ? { lat: +data[0].lat, lng: +data[0].lon } : null;
 }
@@ -274,8 +273,6 @@ async function drawRoute(start, end) {
 
   const res = await fetch(url);
   const data = await res.json();
-
   const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
   routeLine = L.polyline(coords, { color: "red", weight: 5 }).addTo(map);
-  map.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
 }

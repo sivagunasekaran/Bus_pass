@@ -8,6 +8,9 @@ body {
 
   
 }
+#resetRoute {
+  display: none;
+}
 
 /* =========================
    MAIN CONTAINER (CARD)

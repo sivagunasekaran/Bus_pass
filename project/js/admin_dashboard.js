@@ -6,8 +6,8 @@ console.log("✅ ADMIN DASHBOARD JS LOADED");
 
 // ================= AUTH CHECK =================
 const token =
-  localStorage.getItem("token") ||
-  localStorage.getItem("access_token");
+  localStorage.getItem("access_token") ||
+  localStorage.getItem("token");
 
 const role = localStorage.getItem("role");
 
@@ -16,212 +16,231 @@ if (!token || role !== "ADMIN") {
   window.location.href = "login.html";
 }
 
-// ================= ELEMENTS =================
-const passTable = document.getElementById("passTable");
-const renewTable = document.getElementById("renewTable");
-const newPassDiv = document.getElementById("newPass");
-const renewPassDiv = document.getElementById("renewPass");
+// ================= GLOBAL DOM REFERENCES =================
+let passTableBody;
+let renewTableBody;
+let newPassDiv;
+let renewPassDiv;
 
-// ================= TAB SWITCH (GLOBAL) =================
+// ================= DOM READY =================
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("🚀 Admin dashboard initialized");
+
+  passTableBody = document.getElementById("passTableBody");
+  renewTableBody = document.getElementById("renewTableBody");
+  newPassDiv = document.getElementById("newPass");
+  renewPassDiv = document.getElementById("renewPass");
+
+  if (!passTableBody || !renewTableBody) {
+    console.error("❌ Required table elements not found in HTML");
+    return;
+  }
+
+  showTab("newPass");
+});
+
+// ================= TAB SWITCH =================
 window.showTab = function (tabId) {
-  console.log("🔁 Switching tab:", tabId);
-
-  if (newPassDiv)
-    newPassDiv.style.display = tabId === "newPass" ? "block" : "none";
-
-  if (renewPassDiv)
-    renewPassDiv.style.display = tabId === "renewPass" ? "block" : "none";
+  newPassDiv.style.display = tabId === "newPass" ? "block" : "none";
+  renewPassDiv.style.display = tabId === "renewPass" ? "block" : "none";
 
   if (tabId === "newPass") loadNewPasses();
   if (tabId === "renewPass") loadRenewPasses();
 };
 
-// ================= LOAD NEW PASSES =================
-async function loadNewPasses() {
-  console.log("📥 Loading new applied passes");
+// =================================================
+// ================= NEW PASSES =====================
+// =================================================
 
-  passTable.innerHTML =
-    `<tr><td colspan="5">Loading...</td></tr>`;
+async function loadNewPasses() {
+  passTableBody.innerHTML =
+    `<tr><td colspan="7">Loading...</td></tr>`;
 
   try {
     const res = await fetch(
       "http://127.0.0.1:5001/api/admin/passes/pending",
-      {
-        method: "GET",
-        headers: {
-          "Authorization": "Bearer " + token,
-          "Content-Type": "application/json"
-        }
-      }
+      { headers: { Authorization: "Bearer " + token } }
     );
 
+    const data = await res.json();
+
     if (!res.ok) {
-      const text = await res.text();
-      console.error("❌ API Error:", res.status, text);
-      passTable.innerHTML =
-        `<tr><td colspan="5">Failed to load data</td></tr>`;
+      passTableBody.innerHTML =
+        `<tr><td colspan="7">${data.message || "Failed to load"}</td></tr>`;
       return;
     }
 
-    const data = await res.json();
-    renderPassTable(data);
-
+    renderNewPassTable(data);
   } catch (err) {
-    console.error("❌ Fetch error:", err);
-    passTable.innerHTML =
-      `<tr><td colspan="5">Server not reachable</td></tr>`;
+    console.error("❌ New pass fetch error:", err);
+    passTableBody.innerHTML =
+      `<tr><td colspan="7">Server error</td></tr>`;
   }
 }
 
-// ================= RENDER NEW PASSES =================
-function renderPassTable(passes) {
-  passTable.innerHTML = "";
+function renderNewPassTable(passes) {
+  passTableBody.innerHTML = "";
 
   if (!passes || passes.length === 0) {
-    passTable.innerHTML =
-      `<tr><td colspan="5">No new applications</td></tr>`;
+    passTableBody.innerHTML =
+      `<tr><td colspan="7">No new applications</td></tr>`;
     return;
   }
 
   passes.forEach(p => {
-    const tr = document.createElement("tr");
-
-    tr.innerHTML = `
-      <td>User #${p.user_id}</td>
-      <td>${p.route}</td>
-      <td>
-        <a href="http://127.0.0.1:5001/uploads/id_proofs/${p.id_proof}"
-           target="_blank">View</a>
-      </td>
-      <td>${p.status}</td>
-      <td>
-        <button onclick="approvePass(${p.id})">Approve</button>
-        <button onclick="rejectPass(${p.id})">Reject</button>
-      </td>
+    passTableBody.innerHTML += `
+      <tr>
+        <td>${p.applicant_name}</td>
+        <td>${p.route}</td>
+        <td>${p.distance_km} km</td>
+        <td>₹${p.fare}</td>
+        <td>
+          ${
+            p.id_proof
+              ? `<a href="http://127.0.0.1:5001/uploads/id_proofs/${p.id_proof}" target="_blank">View</a>`
+              : "—"
+          }
+        </td>
+        <td>${p.status}</td>
+        <td>
+          <button onclick="updateNewPass(${p.id}, 'approve')">Approve</button>
+          <button onclick="updateNewPass(${p.id}, 'reject')">Reject</button>
+        </td>
+      </tr>
     `;
-
-    passTable.appendChild(tr);
   });
 }
 
-// ================= APPROVE / REJECT PASS =================
-async function approvePass(id) {
-  await updateStatus(
-    `http://127.0.0.1:5001/api/admin/pass/${id}/approve`,
-    loadNewPasses
-  );
-}
+window.updateNewPass = async function (id, action) {
+  if (!confirm(`Are you sure you want to ${action}?`)) return;
 
-async function rejectPass(id) {
-  await updateStatus(
-    `http://127.0.0.1:5001/api/admin/pass/${id}/reject`,
-    loadNewPasses
-  );
-}
+  try {
+    const res = await fetch(
+      `http://127.0.0.1:5001/api/admin/pass/${id}/${action}`,
+      {
+        method: "PUT",
+        headers: { Authorization: "Bearer " + token }
+      }
+    );
 
-// ================= LOAD RENEW PASSES =================
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.message || "Action failed");
+      return;
+    }
+
+    alert(data.message);
+    loadNewPasses();
+
+  } catch (err) {
+    console.error("❌ Update new pass error:", err);
+    alert("Server error");
+  }
+};
+
+// =================================================
+// ================= RENEW PASSES ==================
+// =================================================
+
 async function loadRenewPasses() {
-  console.log("📥 Loading renew passes");
-
-  renewTable.innerHTML =
-    `<tr><td colspan="4">Loading...</td></tr>`;
+  renewTableBody.innerHTML =
+    `<tr><td colspan="7">Loading...</td></tr>`;
 
   try {
     const res = await fetch(
       "http://127.0.0.1:5001/api/admin/renewals",
-      {
-        method: "GET",
-        headers: {
-          "Authorization": "Bearer " + token,
-          "Content-Type": "application/json"
-        }
-      }
+      { headers: { Authorization: "Bearer " + token } }
     );
 
+    const data = await res.json();
+
     if (!res.ok) {
-      const text = await res.text();
-      console.error("❌ Renew API Error:", res.status, text);
-      renewTable.innerHTML =
-        `<tr><td colspan="4">Failed to load renewals</td></tr>`;
+      renewTableBody.innerHTML =
+        `<tr><td colspan="7">${data.message || "Failed to load"}</td></tr>`;
       return;
     }
 
-    const data = await res.json();
     renderRenewTable(data);
-
   } catch (err) {
-    console.error("❌ Renew fetch error:", err);
-    renewTable.innerHTML =
-      `<tr><td colspan="4">Server error</td></tr>`;
+    console.error("❌ Renewal fetch error:", err);
+    renewTableBody.innerHTML =
+      `<tr><td colspan="7">Server error</td></tr>`;
   }
 }
 
-// ================= RENDER RENEW PASSES =================
 function renderRenewTable(renewals) {
-  renewTable.innerHTML = "";
+  renewTableBody.innerHTML = "";
 
   if (!renewals || renewals.length === 0) {
-    renewTable.innerHTML =
-      `<tr><td colspan="4">No renewal requests</td></tr>`;
+    renewTableBody.innerHTML =
+      `<tr><td colspan="7">No renewal requests</td></tr>`;
     return;
   }
 
   renewals.forEach(r => {
-    const tr = document.createElement("tr");
-
-    tr.innerHTML = `
-      <td>User #${r.user_id}</td>
-      <td>₹${r.renewal_fare}</td>
-      <td>${r.status}</td>
-      <td>
-        <button onclick="approveRenew(${r.id})">Approve</button>
-        <button onclick="rejectRenew(${r.id})">Reject</button>
-      </td>
+    renewTableBody.innerHTML += `
+      <tr>
+        <td>${r.user_name}</td>
+        <td>${r.old_route}</td>
+        <td>${r.requested_route}</td>
+        <td>${r.route_changed ? "YES" : "NO"}</td>
+        <td>₹${r.fare}</td>
+        <td>${r.status}</td>
+        <td>
+          ${
+            r.status === "PENDING"
+              ? `
+                <button onclick="updateRenewal(${r.id}, 'approve')">Approve</button>
+                <button onclick="updateRenewal(${r.id}, 'reject')">Reject</button>
+              `
+              : "-"
+          }
+        </td>
+      </tr>
     `;
-
-    renewTable.appendChild(tr);
   });
 }
 
-// ================= APPROVE / REJECT RENEW =================
-async function approveRenew(id) {
-  await updateStatus(
-    `http://127.0.0.1:5001/api/admin/renewal/${id}/approve`,
-    loadRenewPasses
-  );
-}
+async function updateRenewal(renewalId, action) {
+  console.log("🔥 Updating renewal:", renewalId, action);
 
-async function rejectRenew(id) {
-  await updateStatus(
-    `http://127.0.0.1:5001/api/admin/renewal/${id}/reject`,
-    loadRenewPasses
-  );
-}
+  const token =
+    localStorage.getItem("access_token") ||
+    localStorage.getItem("token");
 
-// ================= COMMON UPDATE HANDLER =================
-async function updateStatus(url, reloadFn) {
+  if (!token) {
+    alert("Admin token missing");
+    return;
+  }
+
+  const url = `http://127.0.0.1:5001/api/admin/renewals/${renewalId}/${action}`;
+  
+
+  console.log("➡️ Calling:", url);
+
   try {
     const res = await fetch(url, {
-      method: "PUT",
+      method: "POST",
       headers: {
-        "Authorization": "Bearer " + token,
-        "Content-Type": "application/json"
+        Authorization: "Bearer " + token
       }
     });
 
+    const data = await res.json();
+    console.log("⬅️ Response:", res.status, data);
+
     if (!res.ok) {
-      console.error("❌ Update failed:", await res.text());
+      alert(data.message || "Action failed");
       return;
     }
 
-    reloadFn();
+    alert(data.message);
+    loadRenewPasses(); 
+
   } catch (err) {
-    console.error("❌ Update error:", err);
+    console.error("❌ UI fetch error:", err);
+    alert("Network / JS error");
   }
 }
 
-// ================= INIT =================
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("🚀 Admin dashboard initialized");
-  showTab("newPass"); // default tab
-});

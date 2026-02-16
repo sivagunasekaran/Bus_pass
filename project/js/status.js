@@ -1,117 +1,164 @@
-// ==============================
-// STATUS PAGE LOGIC
-// ==============================
+let STATUS_DATA = null;   // 🔥 GLOBAL STORE
 
-// 1. Get JWT token
-const token = localStorage.getItem("token");
+document.addEventListener("DOMContentLoaded", async () => {
 
-if (!token) {
-  alert("Session expired. Please login again.");
-  window.location.href = "login.html";
-}
+  const token =
+    localStorage.getItem("access_token") ||
+    localStorage.getItem("token");
 
-// DOM elements
-const statusText = document.getElementById("renewalStatus");
-const payBtn = document.getElementById("payBtn");
-
-// ==============================
-// 2. Fetch Renewal Status
-// ==============================
-fetch("http://127.0.0.1:5001/api/renewal/my-renewal", {
-  headers: {
-    "Authorization": "Bearer " + token
-  }
-})
-.then(res => res.json())
-.then(data => {
-  console.log("Renewal data:", data);
-
-  if (!data || !data.status) {
-    statusText.innerText = "No renewal found";
+  if (!token) {
+    alert("Login required");
     return;
   }
 
-  // Show status
-  statusText.innerText = "Renewal Status: " + data.status;
+  const res = await fetch("http://127.0.0.1:5001/api/status", {
+    headers: { Authorization: "Bearer " + token }
+  });
 
-  // 🔴 Store renewal_id for payment
-  localStorage.setItem("renewal_id", data.id);
-
-  // Show Pay button ONLY if approved
-  if (data.status === "APPROVED") {
-    payBtn.style.display = "block";
-  }
-})
-.catch(err => {
-  console.error(err);
-  alert("Failed to load renewal status");
-});
-
-// ==============================
-// 3. Pay Button Click
-// ==============================
-payBtn.onclick = async function () {
-
-  const renewalId = localStorage.getItem("renewal_id");
-
-  if (!renewalId) {
-    alert("Renewal ID missing");
-    return;
-  }
-
-  // Create Razorpay order
-  const res = await fetch(
-    "http://127.0.0.1:5001/api/payment/renewal/create-order",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + token
-      },
-      body: JSON.stringify({
-        renewal_id: renewalId
-      })
-    }
-  );
-
-  const order = await res.json();
-  console.log("Order:", order);
+  const data = await res.json();
 
   if (!res.ok) {
-    alert(order.message || "Failed to create payment order");
+    alert(data.message || "Unable to load status");
     return;
   }
 
-  // Razorpay configuration
-  const options = {
-    key: "rzp_test_xxxxx",   // 🔴 Replace with your Razorpay Key
-    amount: order.amount,
-    currency: "INR",
-    order_id: order.id,
-    handler: function (response) {
+  // 🔥 STORE GLOBALLY
+  STATUS_DATA = data;
 
-      // Verify payment in backend
-      fetch("http://127.0.0.1:5001/api/payment/renewal/verify", {
+  // ===== UPDATE UI =====
+  document.getElementById("name").innerText = data.applicant_name;
+  document.getElementById("type").innerText = data.pass_type;
+  document.getElementById("route").innerText = data.route;
+  document.getElementById("expiry").innerText = data.expiry_date;
+  document.getElementById("fare").innerText = "₹" + data.fare;
+  document.getElementById("approval").innerText = data.approval_status;
+  document.getElementById("passStatus").innerText = data.pass_status;
+
+  const daysRow = document.getElementById("daysRow");
+  const daysLeftSpan = document.getElementById("daysLeft");
+
+  if (data.pass_status === "ACTIVE" && data.days_left > 0) {
+    daysRow.style.display = "block";
+    daysLeftSpan.innerText = data.days_left + " days";
+  } else {
+    daysRow.style.display = "none";
+  }
+
+  const payBtn = document.getElementById("payBtn");
+
+  if (data.can_pay) {
+    payBtn.style.display = "block";
+    payBtn.onclick = handlePayment;   // 🔥 attach handler
+  } else {
+    payBtn.style.display = "none";
+  }
+});
+
+
+// ================= PAYMENT HANDLER =================
+async function handlePayment() {
+  if (!STATUS_DATA) {
+    alert("Status data not loaded");
+    return;
+  }
+
+  const token =
+    localStorage.getItem("access_token") ||
+    localStorage.getItem("token");
+
+  if (!token) {
+    alert("Login required");
+    return;
+  }
+
+  try {
+    // ===============================
+    // 1️⃣ CREATE RAZORPAY ORDER
+    // ===============================
+    const res = await fetch(
+      "http://127.0.0.1:5001/api/payment/create-order",
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer " + token
+          Authorization: "Bearer " + token
         },
-        body: JSON.stringify(response)
-      })
-      .then(res => res.json())
-      .then(data => {
-        alert("Payment successful");
-        location.reload();
-      })
-      .catch(err => {
-        console.error(err);
-        alert("Payment verification failed");
-      });
-    }
-  };
+        body: JSON.stringify({
+          amount: STATUS_DATA.fare   // backend converts to paise
+        })
+      }
+    );
 
-  // Open Razorpay popup
-  const rzp = new Razorpay(options);
-  rzp.open();
-};
+    const order = await res.json();
+
+    if (!res.ok) {
+      alert(order.message || "Unable to create payment order");
+      return;
+    }
+
+    // ===============================
+    // 2️⃣ RAZORPAY OPTIONS
+    // ===============================
+    const options = {
+      key: order.key,              // Razorpay Test Key
+      amount: order.amount,        // in paise
+      currency: "INR",
+      name: "Bus Pass",
+      description: "Bus Pass Payment",
+      order_id: order.order_id,
+
+      handler: async function (response) {
+        console.log("Razorpay response:", response);
+
+        try {
+          // ===============================
+          // 3️⃣ VERIFY PAYMENT
+          // ===============================
+          const verifyRes = await fetch(
+            "http://127.0.0.1:5001/api/payment/verify",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + token
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            }
+          );
+
+          const verifyData = await verifyRes.json();
+
+          if (!verifyRes.ok) {
+            alert(verifyData.message || "Payment verification failed");
+            return;
+          }
+
+          alert("✅ Payment successful");
+          window.location.reload();
+
+        } catch (err) {
+          console.error("❌ Verification error:", err);
+          alert("Server error during payment verification");
+        }
+      },
+
+      theme: {
+        color: "#3399cc"
+      }
+    };
+
+    // ===============================
+    // 4️⃣ OPEN RAZORPAY
+    // ===============================
+    const rzp = new Razorpay(options);
+    rzp.open();
+
+  } catch (err) {
+    console.error("❌ Payment error:", err);
+    alert("Payment failed");
+  }
+}

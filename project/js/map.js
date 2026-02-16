@@ -1,26 +1,27 @@
 // ==============================
-// GLOBAL VARIABLES
+// GLOBAL STATE (USED BY apply_pass.js)
+// ==============================
+window.selectedRoute = null;
+window.routeSelected = false;
+window.baseFare = null;
+
+// ==============================
+// MAP VARIABLES
 // ==============================
 let map;
 let routeLayerGroup;
-
 let startMarker = null;
 let endMarker = null;
 let routeLine = null;
-
 let startLatLng = null;
 let endLatLng = null;
 
+// DOM elements
 let startInput, endInput, routeInfo, fareInfo, resetRoute, drawRouteBtn;
 
-// Chennai setup
+// Chennai bounds
 const chennaiCenter = [13.0827, 80.2707];
 const chennaiBounds = [[12.9, 80.1], [13.3, 80.4]];
-
-// 🔥 GLOBAL STATE USED BY apply-pass.js
-window.baseFare = null;
-window.routeSelected = false;
-window.routeText = "";
 
 // ==============================
 // DOM READY
@@ -81,7 +82,7 @@ async function handleMapClick(e) {
       .bindPopup("End")
       .openPopup();
 
-    await finalizeRoute();
+    await finalizeRoute("Map Start", "Map End");
   }
 }
 
@@ -90,7 +91,6 @@ async function handleMapClick(e) {
 // ==============================
 function bindTextRoute() {
   drawRouteBtn.addEventListener("click", async () => {
-
     const sText = startInput.value.trim();
     const eText = endInput.value.trim();
 
@@ -99,11 +99,7 @@ function bindTextRoute() {
       return;
     }
 
-    // Clear old visuals only
-    routeLayerGroup.clearLayers();
-    startLatLng = null;
-    endLatLng = null;
-    window.routeSelected = false;
+    clearRouteVisuals();
 
     const s = await getLatLngFromText(sText);
     const e = await getLatLngFromText(eText);
@@ -119,33 +115,40 @@ function bindTextRoute() {
     startMarker = L.marker(s).addTo(routeLayerGroup).bindPopup("Start");
     endMarker   = L.marker(e).addTo(routeLayerGroup).bindPopup("End");
 
-    await finalizeRoute();
+    await finalizeRoute(sText, eText);
   });
 }
 
 // ==============================
-// FINALIZE ROUTE
+// FINALIZE ROUTE (🔥 CORE LOGIC)
 // ==============================
-async function finalizeRoute() {
+async function finalizeRoute(startName, endName) {
   await drawRoute(startLatLng, endLatLng);
 
-  const distance = calculateDistance(
+  const rawDistance = calculateDistance(
     startLatLng.lat, startLatLng.lng,
     endLatLng.lat, endLatLng.lng
   );
 
-  window.baseFare = calculateFare(distance);
+  const distanceKm = Number(rawDistance.toFixed(2));
+  const calculatedFare = calculateFare(distanceKm);
+
+  // 🔥 SINGLE SOURCE OF TRUTH
+  window.selectedRoute = {
+    start: startName,
+    end: endName,
+    distanceKm: distanceKm
+  };
+
+  window.baseFare = calculatedFare;
   window.routeSelected = true;
 
-  window.routeText =
-    `${startLatLng.lat.toFixed(5)},${startLatLng.lng.toFixed(5)} → ` +
-    `${endLatLng.lat.toFixed(5)},${endLatLng.lng.toFixed(5)}`;
+  routeInfo.innerText = `Distance: ${distanceKm} km`;
+  fareInfo.innerText = `Base Fare (1 Month): ₹${calculatedFare}`;
 
-  routeInfo.innerText = `Distance: ${distance.toFixed(2)} km`;
-  fareInfo.innerText = `Base Fare (1 Month): ₹${window.baseFare}`;
+  console.log("✅ ROUTE STORED:", window.selectedRoute);
 
-  // 🔥 notify apply-pass.js
-  if (window.onRouteCalculated) {
+  if (typeof window.onRouteCalculated === "function") {
     window.onRouteCalculated();
   }
 }
@@ -180,22 +183,24 @@ async function drawRoute(start, end) {
 // ==============================
 // RESET ROUTE
 // ==============================
-function clearRoute() {
+function clearRouteVisuals() {
   routeLayerGroup.clearLayers();
-
   startMarker = null;
   endMarker = null;
   routeLine = null;
   startLatLng = null;
   endLatLng = null;
+}
 
-  window.baseFare = null;
+function clearRoute() {
+  clearRouteVisuals();
+
+  window.selectedRoute = null;
   window.routeSelected = false;
-  window.routeText = "";
+  window.baseFare = null;
 
   startInput.value = "";
   endInput.value = "";
-
   routeInfo.innerText = "";
   fareInfo.innerText = "";
   document.getElementById("finalFare").innerText = "";
@@ -205,7 +210,7 @@ function clearRoute() {
 
   map.setView(chennaiCenter, 13);
 
-  if (window.onRouteCalculated) {
+  if (typeof window.onRouteCalculated === "function") {
     window.onRouteCalculated();
   }
 }
@@ -242,11 +247,12 @@ function calculateFare(distance) {
 }
 
 // ==============================
-// GEOCODING
+// GEOCODING (NOMINATIM)
 // ==============================
 async function getLatLngFromText(place) {
   const url =
-    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place + ", Chennai")}&limit=1`;
+    `https://nominatim.openstreetmap.org/search?format=json&q=` +
+    `${encodeURIComponent(place + ", Chennai")}&limit=1`;
 
   const res = await fetch(url);
   const data = await res.json();

@@ -14,9 +14,21 @@
   <h2>Renew Bus Pass</h2>
 
   <form id="renewForm" class="auth-form">
+    <p>
+    <strong>Name:</strong>
+    <span id="userName"></span>
+    </p>
 
-    <p><b>Current Route:</b> Tambaram → Guindy</p>
-    <p><b>Current Expiry:</b> 30-Sep-2026</p>
+    <p>
+      <strong>Route:</strong>
+      <span id="currentRoute"></span>
+    </p>
+
+    <p>
+      <strong>Expiry Date:</strong>
+      <span id="expiryDate"></span>
+    </p>
+
     <div class="checkbox-row">
       <input type="checkbox" id="changeRoute">
       <label for="changeRoute"><b>Change route</b></label>
@@ -37,8 +49,8 @@
     </div>
 
     <select id="duration">
-      <option value="30">1 Month</option>
-      <option value="90">3 Months</option>
+      <option value="1">1 Month</option>
+      <option value="3">3 Months</option>
     </select>
 
     <button type="button" id="calculateRenewal">

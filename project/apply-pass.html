@@ -17,15 +17,27 @@
 <body>
     <div class="container">
     <h2>Apply Bus Pass</h2>
+<form class="auth-form" id="applyForm">
 
-  <form class="auth-form" id="applyForm">
+  <input
+    type="text"
+    id="name"
+    name="applicant_name"
+    placeholder="Applicant Name"
+    required
+  >
 
-    <input type="text" placeholder="Applicant Name" required>
-    <input type="file" required>
+  <input
+  type="file"
+  id="idProof"
+  name="id_proof"
+  accept=".jpg,.jpeg,.png,.pdf"
+  required
+  >
 
-    <input type="text" id="startInput" placeholder="Enter Start Location (Chennai)">
-    <input type="text" id="endInput" placeholder="Enter End Location (Chennai)">
-
+  <input type="text" id="startInput" placeholder="Enter Start Location (Chennai)">
+  <input type="text" id="endInput" placeholder="Enter End Location (Chennai)">
+  
     <button type="button" id="drawRouteBtn">Show Route</button>
 
     <div id="map"></div>
