@@ -158,49 +158,60 @@ function setupRenewPass() {
     resetRoute();
   });
 
-  // ---- SUBMIT RENEWAL ----
-  renewForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  // ---- SUBMIT RENEWAL ----// ---- SUBMIT RENEWAL ----
 
-    if (!CALCULATED_FARE) {
-      alert("Please calculate renewal fare first");
-      return;
-    }
+renewForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    const token =
-      localStorage.getItem("access_token") ||
-      localStorage.getItem("token");
+  if (!CALCULATED_FARE) {
+    alert("Please calculate renewal fare first");
+    return;
+  }
 
-    const payload = {
-      bus_pass_id: BUS_PASS_ID,
-      renewal_fare: CALCULATED_FARE,
-      route_changed: ROUTE_CHANGED,
-      requested_route: ROUTE_CHANGED ? REQUESTED_ROUTE : null,
-      requested_distance_km: ROUTE_CHANGED ? REQUESTED_DISTANCE : null
-    };
+  const months = Number(duration.value);
+  if (![1, 3].includes(months)) {
+    alert("Invalid duration selected");
+    return;
+  }
 
-    console.log("📤 Sending payload:", payload);
+  const token =
+    localStorage.getItem("access_token") ||
+    localStorage.getItem("token");
 
-    const res = await fetch("http://127.0.0.1:5001/api/renewal/apply", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token
-      },
-      body: JSON.stringify(payload)
-    });
+  const payload = {
+    bus_pass_id: BUS_PASS_ID,
+    duration_months: months,            // ✅ 🔥 FIX
+    renewal_fare: CALCULATED_FARE,
+    route_changed: ROUTE_CHANGED,
+    requested_route: ROUTE_CHANGED ? REQUESTED_ROUTE : null,
+    requested_distance_km: ROUTE_CHANGED ? REQUESTED_DISTANCE : null
+  };
 
-    const data = await res.json();
+  console.log("📤 Sending payload:", payload);
 
-    if (!res.ok) {
-      alert(data.message || "Renewal failed");
-      return;
-    }
-
-    alert("✅ Renewal applied successfully");
+  const res = await fetch("http://127.0.0.1:5001/api/renewal/apply", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token
+    },
+    body: JSON.stringify(payload)
   });
-}
 
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert("❌ Error: " + (data.message || "Renewal failed"));
+    return;
+  }
+
+  alert("✅ Renewal Applied Successfully!\n\nYour renewal application has been submitted.\nYou will receive an email confirmation shortly.\n\nAdmin will review and approve soon.");
+  
+  // Redirect to status page after 2 seconds
+ 
+});
+
+}
 // ================= MAP HELPERS =================
 function initMapIfNeeded() {
   if (map) return;

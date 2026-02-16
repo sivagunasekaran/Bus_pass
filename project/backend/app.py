@@ -1,18 +1,25 @@
-from flask import Flask, request, jsonify, send_from_directory, abort
+from flask import Flask, jsonify, send_from_directory, abort
 from flask_cors import CORS
-from config import Config
-from extensions import db, jwt
+from dotenv import load_dotenv
 import os
+from config import Config
+from extensions import db, jwt, mail
+from flask_mail import Message
+
+# 🔥 Load environment variables FIRST
+load_dotenv()
 
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
+    # ---------- Init Extensions ----------
     db.init_app(app)
     jwt.init_app(app)
+    mail.init_app(app)
 
-    # 🔥 CORS (simple + permissive for local dev)
+    # ---------- CORS ----------
     CORS(
         app,
         resources={r"/api/*": {"origins": "*"}},
@@ -20,7 +27,6 @@ def create_app():
         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     )
 
- 
     @app.route("/api/<path:any_path>", methods=["OPTIONS"])
     def handle_api_options(any_path):
         return jsonify({}), 200
@@ -45,23 +51,31 @@ def create_app():
 
 app = create_app()
 
-
-# ---------- Static files ----------
-
-
+# ---------- Static Files ----------
 @app.route("/uploads/id_proofs/<filename>")
 def view_id_proof(filename):
-    upload_dir = r"C:\Users\subha\Desktop\Bus_pass\project\backend\uploads\id_proofs"
+    upload_dir = os.path.join(
+        os.getcwd(), "uploads", "id_proofs"
+    )
 
-    print("UPLOAD DIR EXISTS:", os.path.exists(upload_dir))
-    print("REQUESTED FILE:", filename)
-    print("FULL PATH:", os.path.join(upload_dir, filename))
-    print("FILE EXISTS:", os.path.exists(os.path.join(upload_dir, filename)))
-    print("FILES IN DIR:", os.listdir(upload_dir))
-
-    if not os.path.exists(os.path.join(upload_dir, filename)):
+    file_path = os.path.join(upload_dir, filename)
+    if not os.path.exists(file_path):
         abort(404)
 
     return send_from_directory(upload_dir, filename)
+
+
+# ---------- TEST EMAIL ROUTE ----------
+# @app.route("/test-email")
+# def test_email():
+#     msg = Message(
+#         subject="Test Email from Bus Pass App",
+#         recipients=["siva68f9970@gmail.com"],
+#         body="✅ Email setup is working!"
+#     )
+#     mail.send(msg)
+#     return "Email sent successfully"
+
+
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5001, debug=True, use_reloader=True)
+    app.run(host="127.0.0.1", port=5001, debug=True)

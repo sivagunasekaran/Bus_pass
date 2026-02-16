@@ -81,18 +81,5 @@
   <script src="js/map.js"></script>
   <script src="js/apply_pass.js"></script>
 
-
-
-  <!-- Form validation (MUST be last) -->
-  <script>
-    document.getElementById("applyForm").addEventListener("submit", function (e) {
-      const routeInfo = document.getElementById("route-info").innerText;
-      if (!routeInfo) {
-        e.preventDefault();
-        alert("Please select start and end points on the map");
-      }
-    });
-  </script>
-
 </body>
 </html>

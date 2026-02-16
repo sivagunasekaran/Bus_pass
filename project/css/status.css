@@ -118,14 +118,14 @@ h2 {
 }
 
 /* Pass Status */
-.badge.active {
-  background: #e0f2fe;
-  color: #075985;
+.badge.inactive {
+  background: #0c002c;
+  color: #fdfdfd;
 }
 
-.badge.inactive {
+.badge.expired {
   background: #e5e7eb;
-  color: #374151;
+  color: #1f5dc1;
 }
 
 /* =========================
