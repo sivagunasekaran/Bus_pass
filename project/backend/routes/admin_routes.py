@@ -66,6 +66,26 @@ def approve_pass(pass_id):
 
     db.session.commit()
 
+    # Send approval email
+    try:
+        user = User.query.get(bus_pass.user_id)
+        if user:
+            send_email(
+                to=user.email,
+                subject="Bus Pass Application Approved",
+                body=(
+                    f"Hello {bus_pass.applicant_name},\n\n"
+                    f"Your bus pass application has been APPROVED!\n"
+                    f"Route: {bus_pass.route}\n"
+                    f"Distance: {bus_pass.distance_km} km\n"
+                    f"Fare: ₹{bus_pass.fare}\n\n"
+                    "Please proceed to payment to activate your pass.\n\n"
+                    "Thank you."
+                )
+            )
+    except Exception as e:
+        pass
+
     return jsonify({"message": "Pass approved"}), 200
 
 
@@ -89,6 +109,24 @@ def reject_pass(pass_id):
     bus_pass.is_active = 0
 
     db.session.commit()
+
+    # Send rejection email
+    try:
+        user = User.query.get(bus_pass.user_id)
+        if user:
+            send_email(
+                to=user.email,
+                subject="Bus Pass Application Rejected",
+                body=(
+                    f"Hello {bus_pass.applicant_name},\n\n"
+                    f"Unfortunately, your bus pass application has been REJECTED.\n"
+                    f"Route: {bus_pass.route}\n\n"
+                    "Please contact support for more information.\n\n"
+                    "Thank you."
+                )
+            )
+    except Exception as e:
+        pass
 
     return jsonify({"message": "Pass rejected"}), 200
 
@@ -189,9 +227,8 @@ def approve_renewal(renewal_id):
                         "Thank you."
                     )
                 )
-                print(f"✅ Renewal approval email sent to {user.email}")
         except Exception as e:
-            print(f"⚠️  Failed to send renewal approval email: {str(e)}")
+            pass
 
         return jsonify({"message": "Renewal approved successfully"}), 200
 
@@ -225,7 +262,24 @@ def reject_renewal(renewal_id):
 
         db.session.commit()
 
-        # 📧 SEND RENEWAL REJECTION EMAIL
+        # Send renewal rejection email
+        try:
+            bus_pass = BusPass.query.get(renewal.bus_pass_id)
+            user = User.query.get(renewal.user_id)
+            if user and bus_pass:
+                send_email(
+                    to=user.email,
+                    subject="Bus Pass Renewal Rejected",
+                    body=(
+                        f"Hello {bus_pass.applicant_name},\n\n"
+                        f"Unfortunately, your bus pass renewal has been REJECTED.\n"
+                        f"Route: {renewal.requested_route}\n\n"
+                        "Please contact support for more information.\n\n"
+                        "Thank you."
+                    )
+                )
+        except Exception as e:
+            pass
 
         return jsonify({"message": "Renewal rejected successfully"}), 200
 
