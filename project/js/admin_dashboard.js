@@ -5,7 +5,6 @@
 // ================= CONFIG =================
 const API_BASE = "http://127.0.0.1:5001";
 
-// ================= SECURITY HELPERS =================
 function escapeHTML(str) {
   return String(str)
     .replace(/&/g, "&amp;")
@@ -115,7 +114,7 @@ function renderNewPassTable(passes) {
       <td>
         ${
           p.id_proof
-            ? `<a href="${API_BASE}/${p.id_proof}" target="_blank">View</a>`
+            ? `<a href="${API_BASE}/uploads/id_proofs/${p.id_proof}" target="_blank">View</a>`
             : "—"
         }
       </td>
