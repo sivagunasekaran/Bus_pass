@@ -23,13 +23,13 @@ def create_app():
     CORS(
         app,
         resources={r"/api/*": {"origins": "*"}},
-        allow_headers=["Authorization", "Content-Type"],
-        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+        supports_credentials=True
     )
 
+    # ---------- Handle OPTIONS requests ----------
     @app.route("/api/<path:any_path>", methods=["OPTIONS"])
     def handle_api_options(any_path):
-        return jsonify({}), 200
+        return jsonify({"status": "ok"}), 200
 
     # ---------- Blueprints ----------
     from routes.auth import auth_bp
@@ -51,6 +51,16 @@ def create_app():
 
 app = create_app()
 
+
+# ---------- Force CORS headers on every response ----------
+@app.after_request
+def after_request(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization"
+    response.headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,DELETE,OPTIONS"
+    return response
+
+
 # ---------- Static Files ----------
 @app.route("/uploads/id_proofs/<filename>")
 def view_id_proof(filename):
@@ -65,5 +75,6 @@ def view_id_proof(filename):
     return send_from_directory(upload_dir, filename)
 
 
+# ---------- Run Server ----------
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5001, debug=True)

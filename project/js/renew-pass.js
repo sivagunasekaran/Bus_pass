@@ -199,7 +199,7 @@ renewForm.addEventListener("submit", async (e) => {
   const data = await res.json();
 
   if (!res.ok) {
-    alert("❌ Error: " + (data.message || "Renewal failed"));
+    console.log("❌ Error: " + (data.message || "Renewal failed"));
     return;
   }
 

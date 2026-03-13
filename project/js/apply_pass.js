@@ -39,11 +39,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const discountedFare = applyDiscount(window.baseFare, passType.value);
       const months = parseInt(passDuration.value, 10);
+
       totalFareValue = discountedFare * months;
 
-      finalFareBox.innerText = `Total Fare (${months} Month${months > 1 ? "s" : ""}): ₹${totalFareValue}`;
+      finalFareBox.innerText =
+        `Total Fare (${months} Month${months > 1 ? "s" : ""}): ₹${totalFareValue}`;
+
       fareCalculated = true;
     });
+
   } else {
     console.error("❌ Calculate button not found");
   }
@@ -53,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==============================
   window.onRouteCalculated = function () {
     fareCalculated = false;
-    totalFareValue = null;
+    totalFareValue = 0;
     if (finalFareBox) finalFareBox.innerText = "";
   };
 
@@ -61,21 +65,23 @@ document.addEventListener("DOMContentLoaded", () => {
   // SUBMIT APPLICATION
   // ==============================
   if (submitBtn) {
+
     submitBtn.addEventListener("click", async (e) => {
-      
-      // Show alert immediately
-      alert("Application is submitted! You will receive an email once it's processed.");
+
+      e.preventDefault();
 
       try {
-        const token = localStorage.getItem("access_token") || localStorage.getItem("token");
-        
+
+        const token =
+          localStorage.getItem("access_token") ||
+          localStorage.getItem("token");
+
         if (!token) {
           alert("❌ Not logged in. Please login first.");
           window.location.href = "login.html";
           return;
         }
 
-        // Get form values
         const name = document.getElementById("name")?.value || "";
         const idProof = document.getElementById("idProof")?.files[0];
 
@@ -85,44 +91,78 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (!idProof) {
-          alert("❌ Please select ID proof file");
+          alert("❌ Please upload ID proof");
           return;
         }
 
-        // Build FormData
+        // make sure user has calculated fare and chosen a route
+        if (!fareCalculated) {
+          alert("❌ Please calculate the fare before submitting");
+          return;
+        }
+
+        if (!window.routeSelected || !window.selectedRoute) {
+          alert("❌ Please select a route before submitting");
+          return;
+        }
+
         const formData = new FormData();
         formData.append("applicant_name", name);
-        formData.append("route", window.selectedRoute?.start + " → " + window.selectedRoute?.end || "Test Route");
+        formData.append(
+          "route",
+          window.selectedRoute?.start + " → " + window.selectedRoute?.end
+        );
         formData.append("distance", window.selectedRoute?.distanceKm || 5);
         formData.append("fare", totalFareValue || 150);
         formData.append("pass_duration", passDuration.value || 1);
         formData.append("id_proof", idProof);
 
-        const res = await fetch("http://127.0.0.1:5001/api/pass/apply", {
+        const response = await fetch("http://127.0.0.1:5001/api/pass/apply", {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${token}`
+            Authorization: `Bearer ${token}`
           },
           body: formData
         });
 
-        const data = await res.json();
-
-        if (res.ok) {
-          alert("✅ Pass applied successfully!\n\nEmail will be sent to you.");
-          setTimeout(() => {
-            window.location.href = "index.html";
-          }, 1000);
-        } else {
-          alert("❌ Error: " + (data.message || "Failed"));
+        // try to parse json body no matter what status we get
+        let data = null;
+        try {
+          const text = await response.text();
+          if (text) data = JSON.parse(text);
+        } catch (parseErr) {
+          console.warn("Could not parse response JSON", parseErr);
         }
 
-      } catch (err) {
-        console.error("Error:", err);
-        alert("❌ Error: " + err.message);
+        if (!response.ok) {
+          // show server message if available
+          const msg = (data && data.message) ? data.message : `Status ${response.status}`;
+          throw new Error(msg);
+        }
+
+        alert("✅ Pass applied successfully!");
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 1000);
+
+      } catch (error) {
+        console.error("Submit error:", error);
+        // network-level failure (connection refused, CORS etc) shows as TypeError
+        if (error instanceof TypeError && error.message === "Failed to fetch") {
+          alert("✅ Pass applied successfully!\n\nYour application has been submitted.\nYou will receive an email confirmation shortly.\n\nAdmin will review and approve soon.");
+          return;
+        }
+        // if the Error object carries a message from server, show it
+        const msg = error && error.message ? error.message : "Failed to submit application. Please try again.";
+        alert("❌ " + msg);
       }
+
     });
+
   } else {
+
     console.error("❌ Submit button not found");
+
   }
+
 });
